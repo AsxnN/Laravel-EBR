@@ -113,7 +113,7 @@
                                                 </button>
                                                 <a href="{{ route('files.download', $file->id) }}" 
                                                    class="text-green-600 hover:text-green-900 mr-3">
-                                                    Descargar
+                                                    Descargar datos preocesados
                                                 </a>
                                                 <a href="{{ route('files.export', $file->id) }}" 
                                                    class="text-purple-600 hover:text-purple-900 mr-3">

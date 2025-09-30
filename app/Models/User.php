@@ -64,19 +64,4 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
-    public function uploadedFiles()
-    {
-        return $this->hasMany(UploadedFile::class, 'created_by');
-    }
-    
-    public function comparisons()
-    {
-        return $this->hasMany(ComparisonData::class, 'created_by');
-    }
-    
-    public function chartTemplates()
-    {
-        return $this->hasMany(ChartTemplate::class, 'created_by');
-    }
 }

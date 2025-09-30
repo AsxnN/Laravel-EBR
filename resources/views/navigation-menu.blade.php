@@ -18,14 +18,11 @@
                     <x-nav-link href="{{ route('files.index') }}" :active="request()->routeIs('files.*')">
                         {{ __('Archivos') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ route('comparisons.index') }}" :active="request()->routeIs('comparisons.*')">
-                        {{ __('Comparativas') }}
-                    </x-nav-link>
-                    <x-nav-link href="{{ route('chart-templates.index') }}" :active="request()->routeIs('comparisons.*')">
-                        {{ __('Crear Gráficos') }}
-                    </x-nav-link>
                     <x-nav-link href="{{ route('charts.index') }}" :active="request()->routeIs('charts.*')">
                         {{ __('Gráficos') }}
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('charts.index') }}" :active="request()->routeIs('charts.*')">
+                        {{ __('Generar Reportes') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -156,9 +153,6 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ route('files.index') }}" :active="request()->routeIs('files.*')">
                 {{ __('Archivos') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('comparisons.index') }}" :active="request()->routeIs('comparisons.*')">
-                {{ __('Comparativas') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ route('charts.index') }}" :active="request()->routeIs('charts.*')">
                 {{ __('Gráficos') }}
