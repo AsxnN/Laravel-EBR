@@ -137,47 +137,42 @@ class ChartController extends Controller
             
             $request->validate([
                 'file_ids' => 'required|array|min:1',
-                'file_ids.*' => 'exists:uploaded_files,id'
+                'file_ids.*' => 'exists:uploaded_files,id',
+                'y_axes' => 'array|min:1', // Permitir múltiples valores Y
+                'y_axes.*' => 'string'
             ]);
 
             $fileIds = $request->file_ids;
-
+            
+            // Si se enviaron múltiples Y, usar el nuevo método
+            $yAxes = $request->input('y_axes', [$template->y_axis]);
+            
             Log::info('=== GENERATE FROM TEMPLATE START ===', [
                 'template_id' => $templateId,
                 'file_ids' => $fileIds,
                 'x_axis' => $template->x_axis,
-                'y_axis' => $template->y_axis,
-                'chart_type' => $template->chart_type,
-                'request_data' => $request->all()
+                'y_axes' => $yAxes,
+                'chart_type' => $template->chart_type
             ]);
 
-            // USAR EL MÉTODO CON NIVELES ASIGNADOS
-            $chartData = $this->processMultipleFilesWithLevels($fileIds, $template->x_axis, $template->y_axis, $request);
-
-            Log::info('=== CHART DATA GENERATED ===', [
-                'categories_count' => count($chartData['categories']),
-                'series_count' => count($chartData['series']),
-                'chart_data_structure' => [
-                    'categories' => $chartData['categories'],
-                    'series' => array_map(function($series) {
-                        return [
-                            'name' => $series['name'],
-                            'data_count' => count($series['data']),
-                            'total_value' => array_sum($series['data'])
-                        ];
-                    }, $chartData['series'])
-                ]
-            ]);
+            if (count($yAxes) > 1) {
+                // Usar método para múltiples Y
+                $chartData = $this->processMultipleFilesWithMultipleY($fileIds, $template->x_axis, $yAxes, $request);
+            } else {
+                // Usar método original para un solo Y
+                $chartData = $this->processMultipleFilesWithLevels($fileIds, $template->x_axis, $yAxes[0], $request);
+            }
 
             return response()->json([
                 'success' => true,
                 'data' => $chartData,
                 'config' => [
                     'x_axis' => $template->x_axis,
-                    'y_axis' => $template->y_axis,
+                    'y_axes' => $yAxes,
                     'chart_type' => $template->chart_type,
                     'x_label' => $template->x_axis_label,
-                    'y_label' => $template->y_axis_label
+                    'y_label' => count($yAxes) > 1 ? 'Múltiples Métricas' : $template->y_axis_label,
+                    'multiple_y' => count($yAxes) > 1
                 ],
                 'template' => [
                     'name' => $template->name,
@@ -188,14 +183,12 @@ class ChartController extends Controller
 
         } catch (\Exception $e) {
             Log::error('=== GENERATE FROM TEMPLATE ERROR ===', [
-                'template_id' => $templateId,
-                'file_ids' => $request->file_ids ?? [],
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar gráfico desde plantilla: ' . $e->getMessage()
+                'message' => 'Error al generar gráfico: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -768,7 +761,7 @@ class ChartController extends Controller
         return ucfirst(strtolower($file->document_type));
     }
 
-    private function processMultipleFilesWithLevels($fileIds, $xAxis, $yAxis, $request, $limit = null)
+    public function processMultipleFilesWithLevels($fileIds, $xAxis, $yAxis, $request, $limit = null)
     {
         Log::info('Procesando múltiples archivos con niveles asignados', [
             'file_ids' => $fileIds,
@@ -906,6 +899,187 @@ class ChartController extends Controller
 
         return $chartData;
     }
+
+    // Método para asignar colores diferenciados por nivel y métrica
+    private function getColorForLevelAndMetric($level, $metric, $allMetrics)
+    {
+        // Colores base por nivel
+        $baseColors = [
+            'Inicial' => ['#3B82F6', '#1E40AF', '#60A5FA', '#93C5FD', '#DBEAFE'],
+            'Primaria' => ['#10B981', '#047857', '#34D399', '#6EE7B7', '#D1FAE5'],
+            'Secundaria' => ['#8B5CF6', '#5B21B6', '#A78BFA', '#C4B5FD', '#EDE9FE']
+        ];
+        
+        $defaultColors = ['#6B7280', '#4B5563', '#9CA3AF', '#D1D5DB', '#F3F4F6'];
+        
+        $levelColors = $baseColors[$level] ?? $defaultColors;
+        
+        // Obtener índice de la métrica
+        $metricIndex = array_search($metric, array_map(function($m) {
+            return self::AXIS_OPTIONS['y_axis'][$m] ?? $m;
+        }, $allMetrics));
+        
+        if ($metricIndex === false) {
+            $metricIndex = 0;
+        }
+        
+        // Usar módulo para evitar desbordamiento
+        $colorIndex = $metricIndex % count($levelColors);
+        
+        return $levelColors[$colorIndex];
+    }
+
+    public function processMultipleFilesWithMultipleY($fileIds, $xAxis, $yAxes, $request, $limit = null)
+    {
+        Log::info('Procesando múltiples archivos con múltiples valores Y', [
+            'file_ids' => $fileIds,
+            'x_axis' => $xAxis,
+            'y_axes' => $yAxes,
+            'limit' => $limit
+        ]);
+
+        $allData = [];
+        $levelOrder = ['Inicial', 'Primaria', 'Secundaria'];
+
+        // Obtener los niveles asignados desde el frontend
+        $assignedLevelsJson = $request->input('assigned_levels', '{}');
+        $assignedLevels = json_decode($assignedLevelsJson, true) ?? [];
+
+        Log::info('Niveles asignados desde frontend', [
+            'assigned_levels_raw' => $assignedLevelsJson,
+            'assigned_levels_parsed' => $assignedLevels
+        ]);
+
+        foreach ($fileIds as $fileId) {
+            try {
+                $file = UploadedFile::findOrFail($fileId);
+                
+                // Usar el nivel asignado por el usuario, o detectar automáticamente
+                $level = $assignedLevels[$fileId] ?? $this->detectEducationalLevel($file);
+                
+                Log::info('Procesando archivo con nivel asignado', [
+                    'file_id' => $fileId,
+                    'file_path' => $file->file_path,
+                    'document_type' => $file->document_type,
+                    'original_name' => $file->original_name,
+                    'assigned_level' => $level
+                ]);
+
+                if (!Storage::disk('public')->exists($file->file_path)) {
+                    Log::warning("Archivo no existe en storage: {$file->file_path}");
+                    continue;
+                }
+
+                // Extraer datos para cada valor Y seleccionado
+                foreach ($yAxes as $yAxis) {
+                    $fileData = $this->extractFileData($file, $xAxis, $yAxis);
+                    
+                    Log::info('Datos extraídos del archivo para Y específico', [
+                        'file_id' => $fileId,
+                        'y_axis' => $yAxis,
+                        'level' => $level,
+                        'data_count' => count($fileData)
+                    ]);
+
+                    if (!empty($fileData)) {
+                        // Crear clave única para cada combinación nivel-métrica
+                        $seriesKey = $level . ' - ' . self::AXIS_OPTIONS['y_axis'][$yAxis];
+                        
+                        foreach ($fileData as $xValue => $yValue) {
+                            if (!isset($allData[$xValue])) {
+                                $allData[$xValue] = [];
+                            }
+                            
+                            if (!isset($allData[$xValue][$seriesKey])) {
+                                $allData[$xValue][$seriesKey] = 0;
+                            }
+                            
+                            $allData[$xValue][$seriesKey] += $yValue;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("Error procesando archivo {$fileId}: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        // Convertir a formato para gráficos
+        $chartData = [
+            'categories' => [],
+            'series' => [],
+            'levels' => array_unique(array_values($assignedLevels)),
+            'metrics' => $yAxes
+        ];
+
+        if (empty($allData)) {
+            Log::warning('No se encontraron datos para procesar');
+            return $chartData;
+        }
+
+        ksort($allData);
+
+        if ($limit) {
+            $allData = array_slice($allData, 0, $limit, true);
+        }
+
+        $chartData['categories'] = array_keys($allData);
+
+        // Crear series ordenadas por nivel y métrica
+        $allSeriesKeys = [];
+        foreach ($allData as $categoryData) {
+            foreach (array_keys($categoryData) as $seriesKey) {
+                if (!in_array($seriesKey, $allSeriesKeys)) {
+                    $allSeriesKeys[] = $seriesKey;
+                }
+            }
+        }
+
+        // Ordenar series por nivel y métrica
+        usort($allSeriesKeys, function($a, $b) use ($levelOrder) {
+            $levelA = explode(' - ', $a)[0];
+            $levelB = explode(' - ', $b)[0];
+            
+            $levelOrderA = array_search($levelA, $levelOrder);
+            $levelOrderB = array_search($levelB, $levelOrder);
+            
+            if ($levelOrderA !== $levelOrderB) {
+                return $levelOrderA <=> $levelOrderB;
+            }
+            
+            return strcmp($a, $b);
+        });
+
+        foreach ($allSeriesKeys as $seriesKey) {
+            $seriesData = [];
+            
+            foreach ($chartData['categories'] as $category) {
+                $value = $allData[$category][$seriesKey] ?? 0;
+                $seriesData[] = $value;
+            }
+            
+            // Extraer nivel para obtener color base
+            $level = explode(' - ', $seriesKey)[0];
+            $metric = explode(' - ', $seriesKey)[1];
+            
+            $chartData['series'][] = [
+                'name' => $seriesKey,
+                'data' => $seriesData,
+                'color' => $this->getColorForLevelAndMetric($level, $metric, $yAxes),
+                'level' => $level,
+                'metric' => $metric
+            ];
+        }
+
+        Log::info('Datos finales del gráfico con múltiples Y', [
+            'categories_count' => count($chartData['categories']),
+            'series_count' => count($chartData['series']),
+            'metrics_used' => $yAxes
+        ]);
+
+        return $chartData;
+    }
+    
 
     // Agregar un nuevo método para procesar datos específicamente para gráficos de pie:
     private function processDataForPieChart($chartData)

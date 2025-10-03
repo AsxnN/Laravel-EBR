@@ -5,6 +5,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ChartTemplateController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,4 +42,29 @@ Route::middleware([
     Route::post('/charts/generate', [ChartController::class, 'generateCustomChart'])->name('charts.generate');
     Route::post('/charts/preview', [ChartController::class, 'getPreviewData'])->name('charts.preview');
 
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/create', [ReportController::class, 'create'])->name('create');
+        Route::post('/', [ReportController::class, 'store'])->name('store');
+        Route::get('/{id}', [ReportController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [ReportController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ReportController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ReportController::class, 'destroy'])->name('destroy');
+        
+        // Acciones de gráficos
+        Route::post('/{id}/charts', [ReportController::class, 'addChart'])->name('charts.add');
+        Route::delete('/{reportId}/charts/{chartId}', [ReportController::class, 'removeChart'])->name('charts.remove');
+        Route::post('/{id}/charts/reorder', [ReportController::class, 'reorderCharts'])->name('charts.reorder');
+        
+        // Acciones de reporte
+        Route::post('/{id}/publish', [ReportController::class, 'publish'])->name('publish');
+        Route::post('/{id}/send', [ReportController::class, 'sendToExternalSystem'])->name('send');
+        Route::get('/{id}/export/{format?}', [ReportController::class, 'export'])->name('export');
+        Route::post('/{id}/duplicate', [ReportController::class, 'duplicate'])->name('duplicate');
+    });
+});
+
+// API para el otro sistema (sin auth)
+Route::prefix('api/reports')->name('api.reports.')->group(function () {
+    Route::get('/{slug}', [ReportController::class, 'apiShow'])->name('show');
 });
