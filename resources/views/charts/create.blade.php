@@ -1,4 +1,4 @@
-<!-- filepath: c:\laragon\www\Laravel-EBR\resources\views\charts\create.blade.php -->
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -50,6 +50,57 @@
                             </div>
 
                             <div>
+                                <label for="level_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tipo de Comparación *
+                                </label>
+                                <select id="level_type" name="level_type" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="single">Un Solo Nivel</option>
+                                    <option value="multiple">Múltiples Niveles</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Tipo de comparación que realizará esta plantilla</p>
+                            </div>
+
+                            <!-- Explicación de tipos con íconos -->
+                            <div class="md:col-span-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-medium text-blue-900">Un Solo Nivel</h4>
+                                                <p class="text-sm text-blue-700 mt-1">
+                                                    Compara múltiples archivos del mismo nivel educativo. 
+                                                    Ejemplo: 3 archivos de Primaria de diferentes fechas o regiones.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-medium text-green-900">Múltiples Niveles</h4>
+                                                <p class="text-sm text-green-700 mt-1">
+                                                    Compara datos entre diferentes niveles educativos.
+                                                    Ejemplo: Inicial vs Primaria vs Secundaria.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
                                 <label for="chart_type" class="block text-sm font-medium text-gray-700 mb-2">
                                     Tipo de Gráfico *
                                 </label>
@@ -59,6 +110,7 @@
                                     <option value="bar">Gráfico de Barras</option>
                                     <option value="line">Gráfico de Líneas</option>
                                     <option value="pie">Gráfico Circular</option>
+                                    <option value="table">Tabla de Datos</option>
                                 </select>
                                 <p class="mt-1 text-xs text-gray-500">Tipo de visualización que mejor represente tus datos</p>
                             </div>
@@ -79,20 +131,21 @@
                             <!-- Configuración de ejes -->
                             <div class="md:col-span-2 mt-6">
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Configuración de Ejes</h3>
-                                <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
                                     <div class="flex">
                                         <div class="flex-shrink-0">
-                                            <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                             </svg>
                                         </div>
                                         <div class="ml-3">
-                                            <p class="text-sm text-blue-700">
+                                            <p class="text-sm text-yellow-700">
                                                 <strong>Eje X:</strong> Categorías o agrupaciones (departamento, UGEL, etc.)
                                                 <br>
                                                 <strong>Eje Y:</strong> Valores numéricos (estudiantes matriculados, instituciones, etc.)
                                                 <br>
-                                                <strong>Leyenda:</strong> Siempre será por nivel educativo (Inicial, Primaria, Secundaria)
+                                                <strong>Segmentación:</strong> 
+                                                <span id="segmentation-info">Selecciona el tipo de comparación para ver cómo se segmentarán los datos</span>
                                             </p>
                                         </div>
                                     </div>
@@ -184,6 +237,7 @@
             const configSummary = document.getElementById('configSummary');
             const exampleSection = document.getElementById('exampleSection');
             const exampleText = document.getElementById('exampleText');
+            const segmentationInfo = document.getElementById('segmentation-info');
 
             // Mapeo de etiquetas
             const axisLabels = {
@@ -195,23 +249,46 @@
                 'column': 'Gráfico de Columnas',
                 'bar': 'Gráfico de Barras',
                 'line': 'Gráfico de Líneas',
-                'pie': 'Gráfico Circular'
+                'pie': 'Gráfico Circular',
+                'table': 'Tabla de Datos'
             };
 
-            // Ejemplos de uso por combinación
+            // Actualizar información de segmentación cuando cambie el tipo
+            document.getElementById('level_type').addEventListener('change', function() {
+                const levelType = this.value;
+                if (levelType === 'single') {
+                    segmentationInfo.textContent = 'Los datos se segmentarán por archivos del mismo nivel educativo seleccionado';
+                } else if (levelType === 'multiple') {
+                    segmentationInfo.textContent = 'Los datos se segmentarán por nivel educativo (Inicial, Primaria, Secundaria)';
+                } else {
+                    segmentationInfo.textContent = 'Selecciona el tipo de comparación para ver cómo se segmentarán los datos';
+                }
+                updatePreview();
+            });
+
+            // Ejemplos de uso por combinación y tipo
             const examples = {
-                'ugel_total_matriculados': 'Útil para comparar la cantidad de estudiantes matriculados entre diferentes UGELs, segmentado por nivel educativo. Ideal para identificar UGELs con mayor demanda educativa.',
-                'departamento_total_matriculados': 'Permite visualizar la distribución de estudiantes matriculados a nivel departamental, facilitando la planificación de recursos a nivel regional.',
-                'distrito_total_matriculados': 'Muestra la concentración de estudiantes por distrito, útil para la asignación de presupuesto y recursos educativos locales.',
-                'ugel_total_secciones': 'Compara la cantidad de secciones disponibles entre UGELs, ayudando a identificar necesidades de infraestructura educativa.',
-                'departamento_nomina_aprobada': 'Visualiza el avance en la aprobación de nóminas por departamento, útil para el seguimiento de procesos administrativos.',
-                'provincia_dni_validado': 'Muestra el progreso en la validación de DNI por provincia, importante para el control de calidad de datos.',
-                'ugel_matricula_proceso': 'Identifica UGELs con mayor cantidad de matrículas en proceso, útil para priorizar soporte técnico.',
-                'distrito_total_grados': 'Compara la oferta educativa por grados entre distritos, ayudando en la planificación curricular.'
+                // Ejemplos para un solo nivel
+                'single_ugel_total_matriculados': 'Útil para comparar archivos de matrícula del mismo nivel (ej: 3 archivos de Primaria) entre diferentes UGELs o periodos, identificando variaciones o tendencias.',
+                'single_departamento_total_matriculados': 'Permite comparar múltiples archivos de matrícula del mismo nivel educativo a nivel departamental, útil para análisis temporales.',
+                'single_distrito_total_matriculados': 'Compara archivos de matrícula del mismo nivel entre diferentes distritos o fechas, ideal para seguimiento de crecimiento.',
+                
+                // Ejemplos para múltiples niveles
+                'multiple_ugel_total_matriculados': 'Compara la matrícula entre Inicial, Primaria y Secundaria por UGEL, mostrando la distribución educativa completa.',
+                'multiple_departamento_total_matriculados': 'Visualiza la distribución de estudiantes por nivel educativo a nivel departamental, facilitando la planificación integral.',
+                'multiple_distrito_total_matriculados': 'Muestra la concentración de estudiantes por nivel educativo en cada distrito, útil para asignación de recursos.',
+
+                // Ejemplos para tablas
+                'single_ugel_total_matriculados_table': 'Tabla que compara archivos del mismo nivel educativo por UGEL, mostrando diferencias numéricas exactas entre archivos.',
+                'multiple_ugel_total_matriculados_table': 'Tabla comprensiva que muestra matrícula por UGEL y nivel educativo, ideal para reportes oficiales completos.',
+                
+                // Más ejemplos...
+                'single_ugel_total_secciones': 'Compara la cantidad de secciones del mismo nivel entre diferentes archivos, útil para análisis de capacidad educativa.',
+                'multiple_ugel_total_secciones': 'Muestra la distribución de secciones por nivel educativo entre UGELs, ayudando en la planificación de infraestructura.',
             };
 
             // Actualizar vista previa cuando cambien los campos
-            ['x_axis', 'y_axis', 'chart_type'].forEach(fieldId => {
+            ['x_axis', 'y_axis', 'chart_type', 'level_type'].forEach(fieldId => {
                 document.getElementById(fieldId).addEventListener('change', updatePreview);
             });
 
@@ -219,23 +296,54 @@
                 const xAxis = document.getElementById('x_axis').value;
                 const yAxis = document.getElementById('y_axis').value;
                 const chartType = document.getElementById('chart_type').value;
+                const levelType = document.getElementById('level_type').value;
 
-                if (xAxis && yAxis && chartType) {
-                    const summary = `
-                        <strong>${chartTypeLabels[chartType]}</strong> que muestra 
-                        <strong>${axisLabels.y_axis[yAxis]}</strong> agrupado por 
-                        <strong>${axisLabels.x_axis[xAxis]}</strong>, segmentado por nivel educativo (Inicial, Primaria, Secundaria).
-                    `;
+                if (xAxis && yAxis && chartType && levelType) {
+                    let summary = '';
+                    let comparisonText = '';
+                    
+                    if (levelType === 'single') {
+                        comparisonText = 'múltiples archivos del mismo nivel educativo seleccionado';
+                    } else {
+                        comparisonText = 'diferentes niveles educativos (Inicial, Primaria, Secundaria)';
+                    }
+                    
+                    if (chartType === 'table') {
+                        summary = `
+                            <strong>${chartTypeLabels[chartType]}</strong> que compara 
+                            <strong>${comparisonText}</strong>, mostrando 
+                            <strong>${axisLabels.y_axis[yAxis]}</strong> organizados por 
+                            <strong>${axisLabels.x_axis[xAxis]}</strong>.
+                        `;
+                    } else {
+                        summary = `
+                            <strong>${chartTypeLabels[chartType]}</strong> que compara 
+                            <strong>${comparisonText}</strong>, mostrando 
+                            <strong>${axisLabels.y_axis[yAxis]}</strong> agrupado por 
+                            <strong>${axisLabels.x_axis[xAxis]}</strong>.
+                        `;
+                    }
+                    
                     configSummary.innerHTML = summary;
                     previewConfig.classList.remove('hidden');
 
                     // Mostrar ejemplo si existe
-                    const exampleKey = `${xAxis}_${yAxis}`;
+                    const exampleKey = chartType === 'table' ? 
+                        `${levelType}_${xAxis}_${yAxis}_table` : 
+                        `${levelType}_${xAxis}_${yAxis}`;
+                    
                     if (examples[exampleKey]) {
                         exampleText.innerHTML = examples[exampleKey];
                         exampleSection.classList.remove('hidden');
                     } else {
-                        exampleSection.classList.add('hidden');
+                        // Fallback a ejemplo más genérico
+                        const fallbackKey = `${levelType}_${xAxis}_${yAxis}`;
+                        if (examples[fallbackKey]) {
+                            exampleText.innerHTML = examples[fallbackKey];
+                            exampleSection.classList.remove('hidden');
+                        } else {
+                            exampleSection.classList.add('hidden');
+                        }
                     }
                 } else {
                     previewConfig.classList.add('hidden');
@@ -251,8 +359,9 @@
                 const xAxis = document.getElementById('x_axis').value;
                 const yAxis = document.getElementById('y_axis').value;
                 const chartType = document.getElementById('chart_type').value;
+                const levelType = document.getElementById('level_type').value;
 
-                const isValid = name && description && purpose && xAxis && yAxis && chartType;
+                const isValid = name && description && purpose && xAxis && yAxis && chartType && levelType;
                 saveBtn.disabled = !isValid;
                 
                 if (isValid) {
@@ -263,7 +372,7 @@
             }
 
             // Escuchar cambios en todos los campos
-            ['name', 'description', 'purpose', 'x_axis', 'y_axis', 'chart_type'].forEach(fieldId => {
+            ['name', 'description', 'purpose', 'x_axis', 'y_axis', 'chart_type', 'level_type'].forEach(fieldId => {
                 document.getElementById(fieldId).addEventListener('input', validateForm);
                 document.getElementById(fieldId).addEventListener('change', validateForm);
             });

@@ -9,15 +9,14 @@ return new class extends Migration
     public function up()
     {
         Schema::table('chart_templates', function (Blueprint $table) {
-            $table->boolean('allow_multiple_metrics')->default(false)->after('y_axis');
-            $table->json('recommended_metrics')->nullable()->after('allow_multiple_metrics');
+            $table->enum('level_type', ['single', 'multiple'])->after('chart_type')->default('multiple');
         });
     }
 
     public function down()
     {
         Schema::table('chart_templates', function (Blueprint $table) {
-            $table->dropColumn(['allow_multiple_metrics', 'recommended_metrics']);
+            $table->dropColumn('level_type');
         });
     }
 };

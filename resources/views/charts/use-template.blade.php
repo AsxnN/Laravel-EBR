@@ -39,6 +39,10 @@
                                     <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
                                     </svg>
+                                @elseif($template->chart_type == 'table')
+                                    <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0V4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1z"></path>
+                                    </svg>
                                 @else
                                     <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
@@ -46,10 +50,6 @@
                                     </svg>
                                 @endif
                             </div>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                {{ $template->chart_type_label }}
-                            </span>
-                        </div>
                     </div>
 
                     <!-- Configuración de la plantilla -->
@@ -98,11 +98,12 @@
                             $levels = [
                                 'inicial' => ['name' => 'Inicial', 'color' => 'blue', 'icon' => '🎨'],
                                 'primaria' => ['name' => 'Primaria', 'color' => 'green', 'icon' => '📚'],
-                                'secundaria' => ['name' => 'Secundaria', 'color' => 'purple', 'icon' => '🎓']
+                                'secundaria' => ['name' => 'Secundaria', 'color' => 'purple', 'icon' => '🎓'],
+                                'global' => ['name' => 'Global', 'color' => 'gray', 'icon' => '🌐']
                             ];
                         @endphp
 
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             @foreach($levels as $levelKey => $levelInfo)
                                 <div class="border border-gray-200 rounded-lg">
                                     <div class="bg-{{ $levelInfo['color'] }}-50 border-b border-{{ $levelInfo['color'] }}-200 px-4 py-3 rounded-t-lg">
@@ -132,6 +133,7 @@
                                                 $name = strtolower($file->original_name);
                                                 $docType = strtolower($file->document_type);
                                                 
+
                                                 if ($levelKey === 'inicial') {
                                                     return str_contains($name, 'inicial') || 
                                                            str_contains($name, 'jardin') || 
@@ -143,7 +145,8 @@
                                                            str_contains($docType, 'inicial') ||
                                                            // También incluir archivos que no claramente pertenecen a otros niveles
                                                            (!str_contains($name, 'primaria') && !str_contains($name, 'secundaria') && 
-                                                            !str_contains($docType, 'primaria') && !str_contains($docType, 'secundaria'));
+                                                            !str_contains($docType, 'primaria') && !str_contains($docType, 'secundaria') &&
+                                                            !str_contains($name, 'global') && !str_contains($docType, 'global'));
                                                 } elseif ($levelKey === 'primaria') {
                                                     return str_contains($name, 'primaria') || 
                                                            str_contains($docType, 'primaria') ||
@@ -153,7 +156,7 @@
                                                            str_contains($name, '4to grado') ||
                                                            str_contains($name, '5to grado') ||
                                                            str_contains($name, '6to grado');
-                                                } else { // secundaria
+                                                } elseif ($levelKey === 'secundaria') {
                                                     return str_contains($name, 'secundaria') || 
                                                            str_contains($docType, 'secundaria') ||
                                                            str_contains($name, '1° sec') ||
@@ -161,6 +164,13 @@
                                                            str_contains($name, '3° sec') ||
                                                            str_contains($name, '4° sec') ||
                                                            str_contains($name, '5° sec');
+                                                } else { // global
+                                                    return str_contains($name, 'global') || 
+                                                           str_contains($docType, 'global') ||
+                                                           str_contains($name, 'general') ||
+                                                           str_contains($docType, 'general') ||
+                                                           str_contains($name, 'consolidado') ||
+                                                           str_contains($docType, 'consolidado');
                                                 }
                                             });
                                         @endphp
@@ -597,17 +607,15 @@
 
         
 
-        // Modificar la función renderChart para incluir el debug:
+        // Modificar la función renderChart para incluir tablas:
         function renderChart(chartData, config, template) {
             debugChartData(chartData, config);
             
-            console.log('Renderizando gráfico con datos:', chartData, config);
-            
-            currentConfig = config;
+            console.log('Renderizando con tipo:', config.chart_type);
             
             // Verificar que tenemos datos
             if (!chartData.series || chartData.series.length === 0) {
-                alert('No se encontraron datos para generar el gráfico');
+                alert('No se encontraron datos para generar el contenido');
                 return;
             }
 
@@ -616,7 +624,13 @@
                 return;
             }
             
-            // Configurar opciones según el tipo de gráfico
+            // Si es una tabla, renderizar tabla en lugar de gráfico
+            if (config.chart_type === 'table') {
+                renderTable(chartData, config, template);
+                return;
+            }
+            
+            // Para gráficos normales, continuar con la lógica existente
             let options = {};
             
             switch(config.chart_type) {
@@ -636,31 +650,18 @@
                     options = createColumnChart(chartData, config, template);
             }
 
-            console.log('Opciones del gráfico:', options);
-
             // Destruir gráfico anterior si existe
             if (currentChart) {
                 currentChart.destroy();
+                currentChart = null;
             }
 
             try {
                 currentChart = new ApexCharts(document.querySelector("#chartContainer"), options);
                 currentChart.render().then(function() {
                     console.log('Gráfico renderizado exitosamente');
-                    
-                    // Mostrar sección del gráfico
-                    document.getElementById('chartSection').classList.remove('hidden');
-                    document.getElementById('chartTitle').textContent = template.name;
-                    document.getElementById('chartSubtitle').textContent = `${config.y_label} por ${config.x_label} - ${chartData.categories.length} categorías`;
-
-                    // Configurar botones de exportación
+                    showChartSection(template, config, chartData);
                     setupExportButtons();
-
-                    // Scroll hacia el gráfico
-                    document.getElementById('chartSection').scrollIntoView({ 
-                        behavior: 'smooth',
-                        block: 'start' 
-                    });
                 }).catch(function(error) {
                     console.error('Error renderizando gráfico:', error);
                     alert('Error al renderizar el gráfico: ' + error.message);
@@ -671,14 +672,37 @@
             }
         }
 
-        // 1. GRÁFICO DE COLUMNAS (Vertical)
+        function setupExportButtons() {
+            const exportPngBtn = document.getElementById('exportPngBtn');
+            const exportSvgBtn = document.getElementById('exportSvgBtn');
+
+            if (exportPngBtn && currentChart) {
+                exportPngBtn.onclick = function() {
+                    currentChart.dataURI().then(function(data) {
+                        const link = document.createElement('a');
+                        link.href = data.imgURI;
+                        link.download = `grafico_${new Date().getTime()}.png`;
+                        link.click();
+                    });
+                };
+            }
+
+            if (exportSvgBtn && currentChart) {
+                exportSvgBtn.onclick = function() {
+                    currentChart.dataURI({type: 'svg'}).then(function(data) {
+                        const link = document.createElement('a');
+                        link.href = data.imgURI;
+                        link.download = `grafico_${new Date().getTime()}.svg`;
+                        link.click();
+                    });
+                };
+            }
+        }
+
+        // Agregar las funciones de creación de gráficos que faltan:
         function createColumnChart(chartData, config, template) {
             return {
-                series: chartData.series.map(series => ({
-                    name: series.name,
-                    data: series.data,
-                    color: series.color
-                })),
+                series: chartData.series,
                 chart: {
                     type: 'bar',
                     height: 500,
@@ -687,28 +711,19 @@
                         tools: {
                             download: true,
                             selection: false,
-                            zoom: true,
-                            zoomin: true,
-                            zoomout: true,
-                            pan: true,
-                            reset: true
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: false,
+                            reset: false
                         }
-                    },
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 800
                     }
                 },
                 plotOptions: {
                     bar: {
                         horizontal: false,
                         columnWidth: '55%',
-                        borderRadius: 5,
-                        borderRadiusApplication: 'end',
-                        dataLabels: {
-                            position: 'top'
-                        }
+                        endingShape: 'rounded'
                     }
                 },
                 dataLabels: {
@@ -722,94 +737,30 @@
                 xaxis: {
                     categories: chartData.categories,
                     title: {
-                        text: config.x_label,
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#374151'
-                        }
-                    },
-                    labels: {
-                        rotate: chartData.categories.length > 8 ? -45 : 0,
-                        style: {
-                            fontSize: '12px',
-                            colors: '#6B7280'
-                        }
+                        text: config.x_label
                     }
                 },
                 yaxis: {
                     title: {
-                        text: config.y_label,
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#374151'
-                        }
-                    },
-                    labels: {
-                        formatter: function (val) {
-                            return Math.round(val).toLocaleString();
-                        }
+                        text: config.y_label
                     }
                 },
                 fill: {
                     opacity: 1
                 },
                 tooltip: {
-                    shared: true,
-                    intersect: false,
                     y: {
                         formatter: function (val) {
-                            return Math.round(val).toLocaleString() + " " + config.y_label.toLowerCase();
+                            return val.toLocaleString()
                         }
                     }
-                },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'center',
-                    fontSize: '14px',
-                    fontWeight: 600
-                },
-                title: {
-                    text: template.name,
-                    align: 'center',
-                    style: {
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#111827'
-                    }
-                },
-                subtitle: {
-                    text: `${config.y_label} por ${config.x_label} - Segmentado por Nivel Educativo`,
-                    align: 'center',
-                    style: {
-                        fontSize: '14px',
-                        color: '#6B7280'
-                    }
-                },
-                colors: chartData.series.map(series => series.color),
-                responsive: [{
-                    breakpoint: 768,
-                    options: {
-                        chart: {
-                            height: 400
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }]
+                }
             };
         }
 
-        // 2. GRÁFICO DE BARRAS (Horizontal)
         function createBarChart(chartData, config, template) {
             return {
-                series: chartData.series.map(series => ({
-                    name: series.name,
-                    data: series.data,
-                    color: series.color
-                })),
+                series: chartData.series,
                 chart: {
                     type: 'bar',
                     height: 500,
@@ -818,157 +769,70 @@
                         tools: {
                             download: true,
                             selection: false,
-                            zoom: true,
-                            zoomin: true,
-                            zoomout: true,
-                            pan: true,
-                            reset: true
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: false,
+                            reset: false
                         }
-                    },
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 800
                     }
                 },
                 plotOptions: {
                     bar: {
                         horizontal: true,
-                        barHeight: '70%',
-                        dataLabels: {
-                            position: 'top'
-                        }
+                        barHeight: '55%',
+                        endingShape: 'rounded'
                     }
                 },
                 dataLabels: {
-                    enabled: true,
-                    offsetX: -6,
-                    style: {
-                        fontSize: '12px',
-                        colors: ['#fff']
-                    }
+                    enabled: false
                 },
                 stroke: {
                     show: true,
-                    width: 1,
-                    colors: ['#fff']
+                    width: 2,
+                    colors: ['transparent']
                 },
                 xaxis: {
+                    categories: chartData.categories,
                     title: {
-                        text: config.y_label, // En barras horizontales, el eje X muestra los valores
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#374151'
-                        }
-                    },
-                    labels: {
-                        formatter: function (val) {
-                            return Math.round(val).toLocaleString();
-                        }
+                        text: config.y_label
                     }
                 },
                 yaxis: {
                     title: {
-                        text: config.x_label, // En barras horizontales, el eje Y muestra las categorías
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#374151'
-                        }
+                        text: config.x_label
                     }
+                },
+                fill: {
+                    opacity: 1
                 },
                 tooltip: {
-                    shared: true,
-                    intersect: false,
                     y: {
                         formatter: function (val) {
-                            return Math.round(val).toLocaleString() + " " + config.y_label.toLowerCase();
+                            return val.toLocaleString()
                         }
                     }
-                },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'center',
-                    fontSize: '14px',
-                    fontWeight: 600
-                },
-                title: {
-                    text: template.name,
-                    align: 'center',
-                    style: {
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#111827'
-                    }
-                },
-                subtitle: {
-                    text: `${config.y_label} por ${config.x_label} - Segmentado por Nivel Educativo`,
-                    align: 'center',
-                    style: {
-                        fontSize: '14px',
-                        color: '#6B7280'
-                    }
-                },
-                // Para barras horizontales, las categorías van en el eje Y
-                yaxis: {
-                    ...{
-                        title: {
-                            text: config.x_label,
-                            style: {
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: '#374151'
-                            }
-                        }
-                    },
-                    categories: chartData.categories
-                },
-                colors: chartData.series.map(series => series.color),
-                responsive: [{
-                    breakpoint: 768,
-                    options: {
-                        chart: {
-                            height: 400
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }]
+                }
             };
         }
 
-        // 3. GRÁFICO DE LÍNEAS
         function createLineChart(chartData, config, template) {
             return {
-                series: chartData.series.map(series => ({
-                    name: series.name,
-                    data: series.data,
-                    color: series.color
-                })),
+                series: chartData.series,
                 chart: {
-                    height: 500,
                     type: 'line',
-                    zoom: {
-                        enabled: true
-                    },
+                    height: 500,
                     toolbar: {
                         show: true,
                         tools: {
                             download: true,
                             selection: false,
-                            zoom: true,
-                            zoomin: true,
-                            zoomout: true,
-                            pan: true,
-                            reset: true
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: false,
+                            reset: false
                         }
-                    },
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 800
                     }
                 },
                 dataLabels: {
@@ -978,102 +842,32 @@
                     curve: 'smooth',
                     width: 3
                 },
-                title: {
-                    text: template.name,
-                    align: 'center',
-                    style: {
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#111827'
-                    }
-                },
-                subtitle: {
-                    text: `${config.y_label} por ${config.x_label} - Segmentado por Nivel Educativo`,
-                    align: 'center',
-                    style: {
-                        fontSize: '14px',
-                        color: '#6B7280'
-                    }
-                },
-                grid: {
-                    row: {
-                        colors: ['#f3f3f3', 'transparent'],
-                        opacity: 0.5
-                    }
-                },
                 xaxis: {
                     categories: chartData.categories,
                     title: {
-                        text: config.x_label,
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#374151'
-                        }
-                    },
-                    labels: {
-                        rotate: chartData.categories.length > 8 ? -45 : 0,
-                        style: {
-                            fontSize: '12px',
-                            colors: '#6B7280'
-                        }
+                        text: config.x_label
                     }
                 },
                 yaxis: {
                     title: {
-                        text: config.y_label,
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#374151'
-                        }
-                    },
-                    labels: {
-                        formatter: function (val) {
-                            return Math.round(val).toLocaleString();
-                        }
+                        text: config.y_label
                     }
                 },
                 tooltip: {
-                    shared: true,
-                    intersect: false,
                     y: {
                         formatter: function (val) {
-                            return Math.round(val).toLocaleString() + " " + config.y_label.toLowerCase();
+                            return val.toLocaleString()
                         }
                     }
-                },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'center',
-                    fontSize: '14px',
-                    fontWeight: 600
                 },
                 markers: {
-                    size: 5,
-                    strokeWidth: 2,
-                    hover: {
-                        size: 7
-                    }
-                },
-                colors: chartData.series.map(series => series.color),
-                responsive: [{
-                    breakpoint: 768,
-                    options: {
-                        chart: {
-                            height: 400
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }]
+                    size: 4
+                }
             };
         }
 
-        // 4. GRÁFICO CIRCULAR (PIE/DONA)
         function createPieChart(chartData, config, template) {
-            // Para gráfico de pie, necesitamos sumar todos los valores por nivel
+            // Para gráficos de pie, necesitamos convertir las series en datos de pie
             const pieData = [];
             const pieLabels = [];
             const pieColors = [];
@@ -1090,8 +884,8 @@
             return {
                 series: pieData,
                 chart: {
-                    width: 500,
                     type: 'pie',
+                    height: 500,
                     toolbar: {
                         show: true,
                         tools: {
@@ -1103,132 +897,249 @@
                             pan: false,
                             reset: false
                         }
-                    },
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 800
                     }
                 },
                 labels: pieLabels,
                 colors: pieColors,
-                title: {
-                    text: template.name,
-                    align: 'center',
-                    style: {
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#111827'
-                    }
-                },
-                subtitle: {
-                    text: `Distribución de ${config.y_label} por Nivel Educativo`,
-                    align: 'center',
-                    style: {
-                        fontSize: '14px',
-                        color: '#6B7280'
-                    }
-                },
-                legend: {
-                    position: 'bottom',
-                    horizontalAlign: 'center',
-                    fontSize: '14px',
-                    fontWeight: 600
-                },
-                dataLabels: {
-                    enabled: true,
-                    formatter: function (val, opts) {
-                        return opts.w.config.labels[opts.seriesIndex] + ": " + val.toFixed(1) + "%";
-                    },
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 'bold'
-                    }
-                },
-                tooltip: {
-                    y: {
-                        formatter: function (val, opts) {
-                            const percentage = ((val / pieData.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-                            return Math.round(val).toLocaleString() + " " + config.y_label.toLowerCase() + " (" + percentage + "%)";
-                        }
-                    }
-                },
-                plotOptions: {
-                    pie: {
-                        expandOnClick: true,
-                        donut: {
-                            size: '0%' // 0% para pie completo, puedes cambiarlo a 40% para donut
-                        }
-                    }
-                },
                 responsive: [{
-                    breakpoint: 768,
-                    options: {
-                        chart: {
-                            width: 350
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }, {
                     breakpoint: 480,
                     options: {
                         chart: {
-                            width: 300
+                            width: 200
                         },
                         legend: {
                             position: 'bottom'
                         }
                     }
-                }]
+                }],
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val.toLocaleString()
+                        }
+                    }
+                }
             };
         }
 
-        // FUNCIÓN PARA CONFIGURAR BOTONES DE EXPORTACIÓN
-        function setupExportButtons() {
+        // Nueva función para renderizar tablas
+        function renderTable(chartData, config, template) {
+            console.log('Renderizando tabla con datos:', chartData);
+            
+            const container = document.getElementById('chartContainer');
+            
+            // Crear HTML de la tabla
+            let tableHtml = `
+                <div class="table-container">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                                        ${config.x_label}
+                                    </th>
+            `;
+            
+            // Agregar headers de niveles
+            chartData.series.forEach(series => {
+                tableHtml += `
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        ${series.name}
+                    </th>
+                `;
+            });
+            
+            // Header de total
+            tableHtml += `
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100">
+                        Total
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+            `;
+            
+            // Agregar filas de datos
+            chartData.categories.forEach((category, index) => {
+                const rowClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                tableHtml += `<tr class="${rowClass}">`;
+                
+                // Categoría
+                tableHtml += `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-300">
+                        ${category}
+                    </td>
+                `;
+                
+                // Valores por nivel
+                let rowTotal = 0;
+                chartData.series.forEach(series => {
+                    const value = series.data[index] || 0;
+                    rowTotal += value;
+                    const colorClass = getColorClassForLevel(series.name);
+                    tableHtml += `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">
+                                ${value.toLocaleString()}
+                            </span>
+                        </td>
+                    `;
+                });
+                
+                // Total de la fila
+                tableHtml += `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 bg-gray-100">
+                        ${rowTotal.toLocaleString()}
+                    </td>
+                `;
+                
+                tableHtml += '</tr>';
+            });
+            
+            // Fila de totales
+            tableHtml += `
+                <tr class="bg-gray-100 font-bold">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-300">
+                        TOTAL
+                    </td>
+            `;
+            
+            let grandTotal = 0;
+            chartData.series.forEach(series => {
+                const levelTotal = series.data.reduce((sum, val) => sum + val, 0);
+                grandTotal += levelTotal;
+                tableHtml += `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-300">
+                        ${levelTotal.toLocaleString()}
+                    </td>
+                `;
+            });
+            
+            tableHtml += `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 bg-gray-200">
+                        ${grandTotal.toLocaleString()}
+                    </td>
+                </tr>
+            `;
+            
+            tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            `;
+            
+            container.innerHTML = tableHtml;
+            
+            // Mostrar sección
+            showChartSection(template, config, chartData);
+            setupTableExportButtons(chartData, config, template);
+        }
+
+        function getColorClassForLevel(levelName) {
+            const colorClasses = {
+                'Inicial': 'bg-blue-100 text-blue-800',
+                'Primaria': 'bg-green-100 text-green-800', 
+                'Secundaria': 'bg-purple-100 text-purple-800',
+                'Global': 'bg-gray-100 text-gray-800'
+            };
+            return colorClasses[levelName] || 'bg-gray-100 text-gray-800';
+        }
+
+        function showChartSection(template, config, chartData) {
+            document.getElementById('chartSection').classList.remove('hidden');
+            document.getElementById('chartTitle').textContent = template.name;
+            
+            if (config.chart_type === 'table') {
+                document.getElementById('chartSubtitle').textContent = `Tabla de ${config.y_label} por ${config.x_label} - ${chartData.categories.length} categorías`;
+            } else {
+                document.getElementById('chartSubtitle').textContent = `${config.y_label} por ${config.x_label} - ${chartData.categories.length} categorías`;
+            }
+
+            // Scroll hacia el contenido
+            document.getElementById('chartSection').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start' 
+            });
+        }
+        
+        function setupTableExportButtons(chartData, config, template) {
             const exportPngBtn = document.getElementById('exportPngBtn');
             const exportSvgBtn = document.getElementById('exportSvgBtn');
 
             if (exportPngBtn) {
                 exportPngBtn.onclick = function() {
-                    if (currentChart) {
-                        currentChart.dataURI().then(({imgURI}) => {
-                            const link = document.createElement('a');
-                            link.href = imgURI;
-                            link.download = `grafico_${currentConfig?.x_axis || 'chart'}_${new Date().getTime()}.png`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }).catch(function(error) {
-                            console.error('Error exportando PNG:', error);
-                            alert('Error al exportar el gráfico como PNG');
-                        });
-                    } else {
-                        alert('No hay gráfico para exportar');
-                    }
+                    exportTableAsImage('png', chartData, config, template);
                 };
+                // CORREGIR ESTA LÍNEA:
+                const pngSpan = exportPngBtn.querySelector('span');
+                if (pngSpan) {
+                    pngSpan.textContent = 'Descargar PNG';
+                }
             }
 
             if (exportSvgBtn) {
                 exportSvgBtn.onclick = function() {
-                    if (currentChart) {
-                        currentChart.dataURI({type: 'svg'}).then(({imgURI}) => {
-                            const link = document.createElement('a');
-                            link.href = imgURI;
-                            link.download = `grafico_${currentConfig?.x_axis || 'chart'}_${new Date().getTime()}.svg`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }).catch(function(error) {
-                            console.error('Error exportando SVG:', error);
-                            alert('Error al exportar el gráfico como SVG');
-                        });
-                    } else {
-                        alert('No hay gráfico para exportar');
-                    }
+                    exportTableAsCSV(chartData, config, template);
                 };
+                // CORREGIR ESTA LÍNEA:
+                const svgSpan = exportSvgBtn.querySelector('span');
+                if (svgSpan) {
+                    svgSpan.textContent = 'Descargar CSV';
+                }
             }
+        }
+
+        function exportTableAsCSV(chartData, config, template) {
+            let csvContent = '';
+            
+            // Header
+            let headers = [config.x_label];
+            chartData.series.forEach(series => headers.push(series.name));
+            headers.push('Total');
+            csvContent += headers.join(',') + '\n';
+            
+            // Datos
+            chartData.categories.forEach((category, index) => {
+                let row = [category];
+                let rowTotal = 0;
+                
+                chartData.series.forEach(series => {
+                    const value = series.data[index] || 0;
+                    rowTotal += value;
+                    row.push(value);
+                });
+                
+                row.push(rowTotal);
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // Totales
+            let totalRow = ['TOTAL'];
+            let grandTotal = 0;
+            chartData.series.forEach(series => {
+                const levelTotal = series.data.reduce((sum, val) => sum + val, 0);
+                grandTotal += levelTotal;
+                totalRow.push(levelTotal);
+            });
+            totalRow.push(grandTotal);
+            csvContent += totalRow.join(',') + '\n';
+            
+            // Descargar
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `tabla_${config.x_axis || 'datos'}_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportTableAsImage(format, chartData, config, template) {
+            // Para exportar como imagen, podríamos usar html2canvas
+            alert('La exportación de tablas como imagen requiere una librería adicional. Por ahora, usa la exportación CSV.');
         }
     </script>
 </x-app-layout>

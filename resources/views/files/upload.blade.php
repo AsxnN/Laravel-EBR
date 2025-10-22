@@ -382,7 +382,7 @@
                 progressText.textContent = 'Procesamiento completado exitosamente';
                 
                 // Mostrar resultados
-                resultContent.innerHTML = `
+                let summaryHtml = `
                     <div class="text-center">
                         <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
                             <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -419,6 +419,21 @@
                     </div>
                 `;
                 
+                // Agregar resumen de normalizaciones de UGEL si existe
+                if (data.summary && data.summary.ugel_normalizations && data.summary.ugel_normalizations.length > 0) {
+                    summaryHtml += '<div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">';
+                    summaryHtml += '<h4 class="text-sm font-medium text-blue-900 mb-2">🔄 Normalizaciones de UGEL realizadas:</h4>';
+                    summaryHtml += '<ul class="text-xs text-blue-700 space-y-1">';
+                    
+                    data.summary.ugel_normalizations.forEach(function(norm) {
+                        summaryHtml += `<li>• "${norm.original}" → "${norm.normalized}" (${norm.count} registro${norm.count !== 1 ? 's' : ''})</li>`;
+                    });
+                    
+                    summaryHtml += '</ul>';
+                    summaryHtml += '</div>';
+                }
+                
+                resultContent.innerHTML = summaryHtml;
                 resultSection.classList.remove('hidden');
             }
 

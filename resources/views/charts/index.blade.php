@@ -50,126 +50,257 @@
                         Plantillas de Gráficos Disponibles
                     </h1>
                     <p class="mt-2 text-gray-500 leading-relaxed">
-                        Selecciona una plantilla para generar gráficos rápidamente con la configuración predefinida.
+                        Selecciona una plantilla y el tipo de comparación que quieres realizar.
                     </p>
                 </div>
 
                 @if($templates->count() > 0)
                     <div class="p-6 lg:p-8">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            @foreach($templates as $template)
-                                <div class="bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors duration-200">
-                                    <div class="p-6">
-                                        <!-- Header de la plantilla -->
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="flex-shrink-0">
-                                                    <div class="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                                                        @if($template->chart_type == 'bar' || $template->chart_type == 'column')
-                                                            <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                                            </svg>
-                                                        @elseif($template->chart_type == 'line')
-                                                            <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
-                                                            </svg>
-                                                        @else
-                                                            <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                                                            </svg>
-                                                        @endif
+                        <!-- Plantillas de Un Solo Nivel -->
+                        @php $singleLevelTemplates = $templates->where('level_type', 'single') @endphp
+                        @if($singleLevelTemplates->count() > 0)
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Plantillas de Un Solo Nivel
+                                </h3>
+                                <p class="text-sm text-gray-600 mb-4">Compara múltiples archivos del mismo nivel educativo</p>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    @foreach($singleLevelTemplates as $template)
+                                        <div class="bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors duration-200">
+                                            <div class="p-6">
+                                                <!-- Header de la plantilla -->
+                                                <div class="flex items-start justify-between mb-4">
+                                                    <div class="flex items-center space-x-3">
+                                                        <div class="flex-shrink-0">
+                                                            <div class="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                                @if($template->chart_type == 'bar' || $template->chart_type == 'column')
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                                                    </svg>
+                                                                @elseif($template->chart_type == 'line')
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
+                                                                    </svg>
+                                                                @elseif($template->chart_type == 'table')
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0V4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1z"></path>
+                                                                    </svg>
+                                                                @else
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                                                    </svg>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="text-lg font-semibold text-gray-900">{{ $template->name }}</h3>
+                                                            <p class="text-sm text-gray-500">{{ $template->chart_type_label }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-col items-end space-y-1">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            Activa
+                                                        </span>
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                            {{ $template->level_type == 'single' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                                            {{ $template->level_type_label }}
+                                                        </span>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <h3 class="text-lg font-semibold text-gray-900">{{ $template->name }}</h3>
-                                                    <p class="text-sm text-gray-500">{{ $template->chart_type_label }}</p>
+
+                                                <!-- Configuración del gráfico -->
+                                                <div class="mb-4">
+                                                    <h4 class="text-sm font-medium text-gray-900 mb-2">Configuración</h4>
+                                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                                        <div>
+                                                            <span class="text-gray-500">Eje X:</span>
+                                                            <span class="font-medium text-gray-900">{{ $template->x_axis_label }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-gray-500">Eje Y:</span>
+                                                            <span class="font-medium text-gray-900">{{ $template->y_axis_label }}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
+
+                                                <!-- Descripción -->
+                                                <div class="mb-4">
+                                                    <h4 class="text-sm font-medium text-gray-900 mb-2">Descripción</h4>
+                                                    <p class="text-sm text-gray-600">{{ $template->description }}</p>
+                                                </div>
+
+                                                <!-- Para qué sirve -->
+                                                <div class="mb-6">
+                                                    <h4 class="text-sm font-medium text-gray-900 mb-2">¿Para qué sirve?</h4>
+                                                    <p class="text-sm text-gray-600">{{ $template->purpose }}</p>
+                                                </div>
+
+                                                <!-- Información adicional -->
+                                                <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                                                    <span>Creado por {{ $template->creator->name }}</span>
+                                                    <span>{{ $template->created_at->format('d/m/Y') }}</span>
+                                                </div>
+
+                                                <!-- Botón de acción según el tipo -->
+                                                @if($filesCount > 0)
+                                                    @if($template->level_type == 'single')
+                                                        <a href="{{ route('charts.use-single-level-template', $template->id) }}" 
+                                                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                            Usar Plantilla - Un Nivel
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ route('charts.use-multi-level-template', $template->id) }}" 
+                                                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                                            </svg>
+                                                            Usar Plantilla - Multi Nivel
+                                                        </a>
+                                                    @endif
+                                                @else
+                                                    <button disabled 
+                                                            class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-500 uppercase tracking-widest cursor-not-allowed">
+                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                                        </svg>
+                                                        Sin archivos
+                                                    </button>
+                                                @endif
                                             </div>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Activa
-                                            </span>
                                         </div>
-
-                                        <!-- Configuración del gráfico -->
-                                        <div class="mb-4">
-                                            <h4 class="text-sm font-medium text-gray-900 mb-2">Configuración</h4>
-                                            <div class="grid grid-cols-2 gap-4 text-sm">
-                                                <div>
-                                                    <span class="text-gray-500">Eje X:</span>
-                                                    <span class="font-medium text-gray-900">{{ $template->x_axis_label }}</span>
-                                                </div>
-                                                <div>
-                                                    <span class="text-gray-500">Eje Y:</span>
-                                                    <span class="font-medium text-gray-900">{{ $template->y_axis_label }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Descripción -->
-                                        <div class="mb-4">
-                                            <h4 class="text-sm font-medium text-gray-900 mb-2">Descripción</h4>
-                                            <p class="text-sm text-gray-600">{{ $template->description }}</p>
-                                        </div>
-
-                                        <!-- Para qué sirve -->
-                                        <div class="mb-6">
-                                            <h4 class="text-sm font-medium text-gray-900 mb-2">¿Para qué sirve?</h4>
-                                            <p class="text-sm text-gray-600">{{ $template->purpose }}</p>
-                                        </div>
-
-                                        <!-- Información adicional -->
-                                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
-                                            <span>Creado por {{ $template->creator->name }}</span>
-                                            <span>{{ $template->created_at->format('d/m/Y') }}</span>
-                                        </div>
-
-                                        <!-- Botón de acción -->
-                                        <div class="flex space-x-2">
-                                            @if($filesCount > 0)
-                                                <a href="{{ route('charts.use-template', $template->id) }}" 
-                                                   class="flex-1 inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                                    </svg>
-                                                    Usar Plantilla
-                                                </a>
-                                            @else
-                                                <button disabled 
-                                                        class="flex-1 inline-flex justify-center items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-500 uppercase tracking-widest cursor-not-allowed">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                                    </svg>
-                                                    Sin archivos
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Información adicional -->
-                        <div class="mt-8 border-t border-gray-200 pt-6">
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm text-gray-500">
-                                    Mostrando {{ $templates->count() }} plantilla(s) disponible(s)
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <a href="{{ route('files.index') }}" 
-                                       class="text-sm text-indigo-600 hover:text-indigo-500">
-                                        Gestionar archivos
-                                    </a>
-                                    <a href="{{ route('charts.create') }}" 
-                                       class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                        </svg>
-                                        Crear Plantilla
-                                    </a>
+                                    @endforeach
                                 </div>
                             </div>
-                        </div>
+                        @endif
+
+                        <!-- Plantillas de Múltiples Niveles -->
+                        @php $multiLevelTemplates = $templates->where('level_type', 'multiple') @endphp
+                        @if($multiLevelTemplates->count() > 0)
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                    </svg>
+                                    Plantillas de Múltiples Niveles
+                                </h3>
+                                <p class="text-sm text-gray-600 mb-4">Compara datos entre diferentes niveles educativos (Inicial, Primaria, Secundaria)</p>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    @foreach($multiLevelTemplates as $template)
+                                        <div class="bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors duration-200">
+                                            <div class="p-6">
+                                                <!-- Header de la plantilla -->
+                                                <div class="flex items-start justify-between mb-4">
+                                                    <div class="flex items-center space-x-3">
+                                                        <div class="flex-shrink-0">
+                                                            <div class="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                                @if($template->chart_type == 'bar' || $template->chart_type == 'column')
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                                                    </svg>
+                                                                @elseif($template->chart_type == 'line')
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
+                                                                    </svg>
+                                                                @elseif($template->chart_type == 'table')
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0V4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1z"></path>
+                                                                    </svg>
+                                                                @else
+                                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                                                    </svg>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="text-lg font-semibold text-gray-900">{{ $template->name }}</h3>
+                                                            <p class="text-sm text-gray-500">{{ $template->chart_type_label }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-col items-end space-y-1">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            Activa
+                                                        </span>
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                            {{ $template->level_type == 'single' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                                            {{ $template->level_type_label }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Configuración del gráfico -->
+                                                <div class="mb-4">
+                                                    <h4 class="text-sm font-medium text-gray-900 mb-2">Configuración</h4>
+                                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                                        <div>
+                                                            <span class="text-gray-500">Eje X:</span>
+                                                            <span class="font-medium text-gray-900">{{ $template->x_axis_label }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-gray-500">Eje Y:</span>
+                                                            <span class="font-medium text-gray-900">{{ $template->y_axis_label }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Descripción -->
+                                                <div class="mb-4">
+                                                    <h4 class="text-sm font-medium text-gray-900 mb-2">Descripción</h4>
+                                                    <p class="text-sm text-gray-600">{{ $template->description }}</p>
+                                                </div>
+
+                                                <!-- Para qué sirve -->
+                                                <div class="mb-6">
+                                                    <h4 class="text-sm font-medium text-gray-900 mb-2">¿Para qué sirve?</h4>
+                                                    <p class="text-sm text-gray-600">{{ $template->purpose }}</p>
+                                                </div>
+
+                                                <!-- Información adicional -->
+                                                <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                                                    <span>Creado por {{ $template->creator->name }}</span>
+                                                    <span>{{ $template->created_at->format('d/m/Y') }}</span>
+                                                </div>
+
+                                                <!-- Botón de acción según el tipo -->
+                                                @if($filesCount > 0)
+                                                    @if($template->level_type == 'single')
+                                                        <a href="{{ route('charts.use-single-level-template', $template->id) }}" 
+                                                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                            Usar Plantilla - Un Nivel
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ route('charts.use-multi-level-template', $template->id) }}" 
+                                                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                                            </svg>
+                                                            Usar Plantilla - Multi Nivel
+                                                        </a>
+                                                    @endif
+                                                @else
+                                                    <button disabled 
+                                                            class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-500 uppercase tracking-widest cursor-not-allowed">
+                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                                        </svg>
+                                                        Sin archivos
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @else
                     <!-- Estado vacío -->

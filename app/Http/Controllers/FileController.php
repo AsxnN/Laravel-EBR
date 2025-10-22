@@ -49,6 +49,43 @@ class FileController extends Controller
         ]
     ];
 
+    // Definir normalizaciones de nombres de UGEL
+    private const UGEL_NORMALIZATIONS = [
+        'huaycabamba' => 'UGEL Huacaybamba',
+        'huaycavamba' => 'UGEL Huacaybamba',
+        'huaycambamba' => 'UGEL Huacaybamba',
+        'ugel huaycabamba' => 'UGEL Huacaybamba',
+        'ugel huaycavamba' => 'UGEL Huacaybamba',
+    ];
+
+    /**
+     * Normaliza el nombre de la UGEL según las reglas definidas
+     */
+    private function normalizeUgelName($ugelName)
+    {
+        if (empty($ugelName)) {
+            return $ugelName;
+        }
+
+        $originalName = $ugelName;
+        $cleanName = trim($ugelName);
+        
+        // Convertir a minúsculas para comparación
+        $lowerName = strtolower($cleanName);
+        
+        // Buscar en las normalizaciones
+        foreach (self::UGEL_NORMALIZATIONS as $incorrect => $correct) {
+            // Buscar coincidencia parcial o completa
+            if (stripos($lowerName, $incorrect) !== false) {
+                Log::info("Normalizando UGEL: '$originalName' -> '$correct'");
+                return $correct;
+            }
+        }
+        
+        // Si no necesita normalización, devolver el nombre limpio
+        return $cleanName;
+    }
+
     public function index()
     {
         $filesByMonth = UploadedFile::with('user')
@@ -90,7 +127,6 @@ class FileController extends Controller
                 ], 400);
             }
             
-            // Guardar archivo temporal para procesamiento
             $tempFileName = 'temp_' . time() . '_' . $file->getClientOriginalName();
             $tempFilePath = $file->storeAs('temp', $tempFileName, 'public');
             $tempFullPath = storage_path('app/public/' . $tempFilePath);
@@ -104,7 +140,6 @@ class FileController extends Controller
                 ], 500);
             }
 
-            // Procesar Excel
             $processedData = $this->processAndValidateExcel($tempFullPath, $documentType);
 
             Log::info("Resultado del procesamiento:");
@@ -121,7 +156,6 @@ class FileController extends Controller
                 ], 400);
             }
 
-            // Guardar SOLO el archivo procesado
             $processedFilePath = $this->saveProcessedFile($processedData['data'], $file->getClientOriginalName(), $documentType);
 
             if (!$processedFilePath) {
@@ -132,7 +166,6 @@ class FileController extends Controller
                 ], 500);
             }
 
-            // Crear registro del archivo (solo el procesado)
             $uploadedFile = UploadedFile::create([
                 'original_name' => $file->getClientOriginalName(),
                 'file_path' => $processedFilePath,
@@ -145,7 +178,6 @@ class FileController extends Controller
                 'uploaded_by' => auth()->id()
             ]);
 
-            // Eliminar archivo temporal
             Storage::disk('public')->delete($tempFilePath);
 
             Log::info("Archivo registrado con ID: {$uploadedFile->id}");
@@ -168,6 +200,7 @@ class FileController extends Controller
             ], 422);
         } catch (\Exception $e) {
             Log::error('ERROR EN UPLOAD: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             if (isset($tempFilePath) && Storage::disk('public')->exists($tempFilePath)) {
                 Storage::disk('public')->delete($tempFilePath);
             }
@@ -210,8 +243,15 @@ class FileController extends Controller
                 $worksheet->getStyle('A1:' . $worksheet->getHighestColumn() . '1')->applyFromArray($headerStyle);
             }
             
-            // Guardar en storage/app/public/processed
-            $fileName = 'procesado_' . time() . '_' . $documentType . '_' . $originalName;
+            // Generar nombre con fecha y hora actual: DD-MM-YYYY-HH-MM-SS
+            $fechaHora = now()->format('d-m-Y-H-i-s');
+            
+            // Limpiar el nombre original del archivo
+            $cleanOriginalName = pathinfo($originalName, PATHINFO_FILENAME);
+            $cleanOriginalName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $cleanOriginalName);
+            
+            // Construir el nombre del archivo: fechahora_tipo_nombreoriginal.xlsx
+            $fileName = $fechaHora . '_' . $documentType . '_' . $cleanOriginalName . '.xlsx';
             $filePath = 'processed/' . $fileName;
             $fullPath = storage_path('app/public/' . $filePath);
             
@@ -224,7 +264,10 @@ class FileController extends Controller
             $writer = new Xlsx($spreadsheet);
             $writer->save($fullPath);
             
-            Log::info('Archivo procesado guardado en: ' . $fullPath);
+            Log::info('Archivo procesado guardado en: ' . $fullPath, [
+                'filename' => $fileName,
+                'fecha_hora' => $fechaHora
+            ]);
             
             return $filePath; // Retornar ruta relativa para almacenar en BD
             
@@ -253,7 +296,9 @@ class FileController extends Controller
                 abort(404, 'Archivo no encontrado');
             }
             
-            $downloadName = 'procesado_' . $file->document_type . '_' . $file->original_name;
+            // Usar el nombre del archivo tal como está guardado (ya incluye fecha y hora)
+            $downloadName = basename($file->file_path);
+            
             return Storage::disk('public')->download($file->file_path, $downloadName);
         } catch (\Exception $e) {
             abort(404, 'Archivo no encontrado');
@@ -363,8 +408,12 @@ class FileController extends Controller
                 abort(404, 'Archivo no encontrado');
             }
             
-            // El archivo ya está procesado, solo descargarlo con nombre personalizado
-            $downloadName = 'exportado_' . $file->document_type . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            // Generar nombre de descarga con fecha y hora actual de la exportación
+            $fechaHoraExport = now()->format('d-m-Y-H-i-s');
+            $cleanOriginalName = pathinfo($file->original_name, PATHINFO_FILENAME);
+            $cleanOriginalName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $cleanOriginalName);
+            
+            $downloadName = 'exportado_' . $fechaHoraExport . '_' . $file->document_type . '_' . $cleanOriginalName . '.xlsx';
             
             return Storage::disk('public')->download($file->file_path, $downloadName);
             
@@ -607,6 +656,12 @@ class FileController extends Controller
                     for ($i = 0; $i < min($maxUsefulColumns, count($row)); $i++) {
                         $cellValue = isset($row[$i]) ? $row[$i] : '';
                         $cellValue = $this->cleanCellValue($cellValue);
+                        
+                        // APLICAR NORMALIZACIÓN DE UGEL EN LA COLUMNA 1
+                        if ($i === 1 && !empty($cellValue)) {
+                            $cellValue = $this->normalizeUgelName($cellValue);
+                        }
+                        
                         $cleanedRow[] = $cellValue;
                         
                         if (!empty($cellValue) && ($i == 6 || $i == 8)) {
@@ -839,6 +894,7 @@ class FileController extends Controller
                     'total_records' => 0,
                     'by_department' => [],
                     'by_ugel' => [],
+                    'ugel_normalizations' => [],
                     'total_matriculados' => 0
                 ];
             }
@@ -851,6 +907,7 @@ class FileController extends Controller
             $totalMatriculados = 0;
             $byDepartment = [];
             $byUgel = [];
+            $ugelNormalizations = []; // Track normalizaciones realizadas
 
             $institutionIndex = array_search('nombre_ie', $headers);
             $matriculadosIndex = array_search('total_matriculados', $headers);
@@ -875,6 +932,21 @@ class FileController extends Controller
 
                 if ($ugelIndex !== false && !empty($row[$ugelIndex])) {
                     $ugel = $row[$ugelIndex];
+                    
+                    // Registrar si esta UGEL fue normalizada
+                    foreach (self::UGEL_NORMALIZATIONS as $incorrect => $correct) {
+                        if (stripos(strtolower($ugel), $incorrect) !== false && $ugel === $correct) {
+                            if (!isset($ugelNormalizations[$incorrect])) {
+                                $ugelNormalizations[$incorrect] = [
+                                    'original' => $incorrect,
+                                    'normalized' => $correct,
+                                    'count' => 0
+                                ];
+                            }
+                            $ugelNormalizations[$incorrect]['count']++;
+                        }
+                    }
+                    
                     $byUgel[$ugel] = ($byUgel[$ugel] ?? 0) + 1;
                 }
             }
@@ -886,6 +958,7 @@ class FileController extends Controller
                 'total_records' => count($dataRows),
                 'by_department' => $byDepartment,
                 'by_ugel' => $byUgel,
+                'ugel_normalizations' => array_values($ugelNormalizations),
                 'document_type' => $documentType,
                 'columns_processed' => count($headers)
             ];
@@ -897,6 +970,7 @@ class FileController extends Controller
                 'total_records' => 0,
                 'by_department' => [],
                 'by_ugel' => [],
+                'ugel_normalizations' => [],
                 'total_matriculados' => 0
             ];
         }

@@ -171,7 +171,8 @@ public function edit($id)
                 'file_ids' => 'required|array|min:1',
                 'file_ids.*' => 'exists:uploaded_files,id',
                 'notes' => 'nullable|string',
-                'assigned_levels' => 'nullable|string'
+                'assigned_levels' => 'nullable|string',
+                'selected_level' => 'nullable|string' // ⬅️ AGREGAR ESTA LÍNEA
             ]);
 
             Log::info('AddChart - Datos recibidos:', $validatedData);
@@ -179,23 +180,55 @@ public function edit($id)
             $template = ChartTemplate::findOrFail($validatedData['template_id']);
             Log::info('AddChart - Template encontrado:', ['template' => $template->toArray()]);
 
-            // **USAR EL MISMO MÉTODO QUE FUNCIONA EN CHARTS**
-            $chartController = new ChartController();
-            
-            // Crear un request simulado con los niveles asignados
-            $mockRequest = new Request();
-            $mockRequest->merge([
-                'file_ids' => $validatedData['file_ids'],
-                'assigned_levels' => $validatedData['assigned_levels'] ?? '{}'
-            ]);
-            
-            // **LLAMAR AL MÉTODO QUE FUNCIONA EN USE-TEMPLATE**
-            $chartData = $chartController->processMultipleFilesWithLevels(
-                $validatedData['file_ids'],
-                $template->x_axis,
-                $template->y_axis,
-                $mockRequest
-            );
+            // **DETERMINAR TIPO DE PROCESAMIENTO SEGÚN LA PLANTILLA**
+            if ($template->level_type === 'single') {
+                // Para plantillas single-level, usar el controlador específico
+                $singleLevelController = new \App\Http\Controllers\SingleLevelChartController(new \App\Services\FileDataProcessor());
+                
+                $selectedLevel = $request->input('selected_level');
+                if (!$selectedLevel) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Debe seleccionar un nivel educativo para plantillas de un solo nivel'
+                    ], 400);
+                }
+                
+                // Crear request mock con el nivel seleccionado
+                $mockRequest = new Request();
+                $mockRequest->merge([
+                    'file_ids' => $validatedData['file_ids'],
+                    'selected_level' => $selectedLevel
+                ]);
+                
+                $response = $singleLevelController->generateFromTemplate($mockRequest, $template->id);
+                $responseData = json_decode($response->getContent(), true);
+                
+                if (!$responseData['success']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $responseData['message'] ?? 'Error al generar gráfico single-level'
+                    ], 400);
+                }
+                
+                $chartData = $responseData['data'];
+                
+            } else {
+                // Para plantillas multi-level, usar el método existente
+                $chartController = new ChartController();
+                
+                $mockRequest = new Request();
+                $mockRequest->merge([
+                    'file_ids' => $validatedData['file_ids'],
+                    'assigned_levels' => $validatedData['assigned_levels'] ?? '{}'
+                ]);
+                
+                $chartData = $chartController->processMultipleFilesWithLevels(
+                    $validatedData['file_ids'],
+                    $template->x_axis,
+                    $template->y_axis,
+                    $mockRequest
+                );
+            }
             
             Log::info('AddChart - Datos del gráfico generados:', ['chart_data' => $chartData]);
 

@@ -15,11 +15,22 @@ class ChartTemplate extends Model
         'x_axis',
         'y_axis',
         'chart_type',
+        'level_type', // Agregar este campo
         'config',
         'purpose',
         'is_active',
         'created_by'
     ];
+
+    public function getLevelTypeLabelAttribute()
+    {
+        $labels = [
+            'single' => 'Un Solo Nivel',
+            'multiple' => 'Múltiples Niveles'
+        ];
+        
+        return $labels[$this->level_type] ?? 'Múltiples Niveles';
+    }
 
     protected $casts = [
         'config' => 'array',
@@ -46,8 +57,8 @@ class ChartTemplate extends Model
             'modalidad' => 'Modalidad',
             'tipo_ie' => 'Tipo IE'
         ];
-
-        return $labels[$this->x_axis] ?? $this->x_axis;
+        
+        return $labels[$this->x_axis] ?? ucfirst(str_replace('_', ' ', $this->x_axis));
     }
 
     public function getYAxisLabelAttribute()
@@ -65,19 +76,20 @@ class ChartTemplate extends Model
             'nomina_aprobada' => 'Nómina Aprobada',
             'nomina_por_rectificar' => 'Nómina por Rectificar'
         ];
-
-        return $labels[$this->y_axis] ?? $this->y_axis;
+        
+        return $labels[$this->y_axis] ?? ucfirst(str_replace('_', ' ', $this->y_axis));
     }
 
     public function getChartTypeLabelAttribute()
     {
-        $types = [
-            'bar' => 'Gráfico de Barras',
+        $labels = [
             'column' => 'Gráfico de Columnas',
+            'bar' => 'Gráfico de Barras',
             'line' => 'Gráfico de Líneas',
-            'pie' => 'Gráfico Circular'
+            'pie' => 'Gráfico Circular',
+            'table' => 'Tabla de Datos'
         ];
-
-        return $types[$this->chart_type] ?? $this->chart_type;
+        
+        return $labels[$this->chart_type] ?? 'Desconocido';
     }
 }

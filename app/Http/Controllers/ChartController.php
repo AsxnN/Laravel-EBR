@@ -73,7 +73,8 @@ class ChartController extends Controller
                 'description' => 'required|string|max:1000',
                 'x_axis' => 'required|string',
                 'y_axis' => 'required|string',
-                'chart_type' => 'required|in:bar,line,pie,column',
+                'chart_type' => 'required|in:bar,line,pie,column,table',
+                'level_type' => 'required|in:single,multiple', // AGREGAR ESTA VALIDACIÓN
                 'purpose' => 'required|string|max:500'
             ]);
 
@@ -92,6 +93,7 @@ class ChartController extends Controller
                 'x_axis' => $request->x_axis,
                 'y_axis' => $request->y_axis,
                 'chart_type' => $request->chart_type,
+                'level_type' => $request->level_type, // AGREGAR ESTE CAMPO
                 'purpose' => $request->purpose,
                 'created_by' => auth()->id()
             ]);
@@ -111,10 +113,15 @@ class ChartController extends Controller
         }
     }
 
-    public function useTemplate($templateId)
+    public function useSingleLevelTemplate($templateId)
     {
         try {
             $template = ChartTemplate::findOrFail($templateId);
+            
+            // Verificar que es una plantilla de un solo nivel
+            if ($template->level_type !== 'single') {
+                abort(404, 'Esta plantilla no es para un solo nivel');
+            }
             
             $files = UploadedFile::with('user')
                 ->orderBy('uploaded_at', 'desc')
@@ -122,7 +129,49 @@ class ChartController extends Controller
 
             $axisOptions = self::AXIS_OPTIONS;
             
+            return view('charts.use-single-level-template', compact('template', 'files', 'axisOptions'));
+
+        } catch (\Exception $e) {
+            abort(404, 'Plantilla no encontrada');
+        }
+    }
+
+    public function useMultiLevelTemplate($templateId)
+    {
+        try {
+            $template = ChartTemplate::findOrFail($templateId);
+            
+            // Para multi-level, usar la vista use-template.blade.php que ya funciona
+            if ($template->level_type !== 'multiple') {
+                abort(404, 'Esta plantilla no es para múltiples niveles');
+            }
+            
+            $files = UploadedFile::with('user')
+                ->orderBy('uploaded_at', 'desc')
+                ->get();
+
+            $axisOptions = self::AXIS_OPTIONS;
+            
+            // USAR LA VISTA QUE YA FUNCIONA
             return view('charts.use-template', compact('template', 'files', 'axisOptions'));
+
+        } catch (\Exception $e) {
+            abort(404, 'Plantilla no encontrada');
+        }
+    }
+
+    // Método para el botón "Usar" en index que decide automáticamente
+    public function useTemplate($templateId)
+    {
+        try {
+            $template = ChartTemplate::findOrFail($templateId);
+            
+            // Redirigir según el tipo de plantilla
+            if ($template->level_type === 'single') {
+                return redirect()->route('charts.use-single-level-template', $templateId);
+            } else {
+                return redirect()->route('charts.use-multi-level-template', $templateId);
+            }
 
         } catch (\Exception $e) {
             abort(404, 'Plantilla no encontrada');
@@ -134,63 +183,159 @@ class ChartController extends Controller
     {
         try {
             $template = ChartTemplate::findOrFail($templateId);
+            $fileIds = $request->input('file_ids', []);
             
-            $request->validate([
-                'file_ids' => 'required|array|min:1',
-                'file_ids.*' => 'exists:uploaded_files,id',
-                'y_axes' => 'array|min:1', // Permitir múltiples valores Y
-                'y_axes.*' => 'string'
-            ]);
+            if (empty($fileIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selecciona al menos un archivo'
+                ]);
+            }
 
-            $fileIds = $request->file_ids;
-            
-            // Si se enviaron múltiples Y, usar el nuevo método
-            $yAxes = $request->input('y_axes', [$template->y_axis]);
-            
-            Log::info('=== GENERATE FROM TEMPLATE START ===', [
+            Log::info('Generando desde plantilla', [
                 'template_id' => $templateId,
                 'file_ids' => $fileIds,
-                'x_axis' => $template->x_axis,
-                'y_axes' => $yAxes,
                 'chart_type' => $template->chart_type
             ]);
 
-            if (count($yAxes) > 1) {
-                // Usar método para múltiples Y
-                $chartData = $this->processMultipleFilesWithMultipleY($fileIds, $template->x_axis, $yAxes, $request);
+            // Procesar archivos según el tipo de plantilla
+            if ($template->chart_type === 'table') {
+                // Para tablas, usar un método específico
+                $chartData = $this->processDataForTable($fileIds, $template->x_axis, $template->y_axis, $request);
             } else {
-                // Usar método original para un solo Y
-                $chartData = $this->processMultipleFilesWithLevels($fileIds, $template->x_axis, $yAxes[0], $request);
+                // Para gráficos normales
+                if ($request->has('assigned_levels')) {
+                    $chartData = $this->processMultipleFilesWithLevels($fileIds, $template->x_axis, $template->y_axis, $request);
+                } else {
+                    $chartData = $this->processMultipleFiles($fileIds, $template->x_axis, $template->y_axis);
+                }
             }
+
+            $config = [
+                'chart_type' => $template->chart_type,
+                'x_axis' => $template->x_axis,
+                'y_axis' => $template->y_axis,
+                'x_label' => $template->x_axis_label,
+                'y_label' => $template->y_axis_label
+            ];
 
             return response()->json([
                 'success' => true,
                 'data' => $chartData,
-                'config' => [
-                    'x_axis' => $template->x_axis,
-                    'y_axes' => $yAxes,
-                    'chart_type' => $template->chart_type,
-                    'x_label' => $template->x_axis_label,
-                    'y_label' => count($yAxes) > 1 ? 'Múltiples Métricas' : $template->y_axis_label,
-                    'multiple_y' => count($yAxes) > 1
-                ],
-                'template' => [
-                    'name' => $template->name,
-                    'description' => $template->description,
-                    'purpose' => $template->purpose
-                ]
+                'config' => $config,
+                'template' => $template
             ]);
 
         } catch (\Exception $e) {
-            Log::error('=== GENERATE FROM TEMPLATE ERROR ===', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Error en generateFromTemplate: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al generar gráfico: ' . $e->getMessage()
-            ], 500);
+            ]);
         }
+    }
+
+    // Nuevo método para procesar datos específicamente para tablas
+    private function processDataForTable($fileIds, $xAxis, $yAxis, $request, $limit = null)
+    {
+        Log::info('Procesando datos para tabla', [
+            'file_ids' => $fileIds,
+            'x_axis' => $xAxis,
+            'y_axis' => $yAxis,
+            'limit' => $limit
+        ]);
+
+        $allData = [];
+        $levelOrder = ['Inicial', 'Primaria', 'Secundaria', 'Global'];
+        $processedLevels = [];
+
+        // Obtener los niveles asignados desde el frontend
+        $assignedLevelsJson = $request->input('assigned_levels', '{}');
+        $assignedLevels = json_decode($assignedLevelsJson, true) ?? [];
+
+        foreach ($fileIds as $fileId) {
+            $file = UploadedFile::find($fileId);
+            if (!$file) continue;
+
+            // Usar el nivel asignado o detectar automáticamente
+            $level = $assignedLevels[$fileId] ?? $this->detectEducationalLevel($file);
+            $processedLevels[] = $level;
+
+            $fileData = $this->extractFileData($file, $xAxis, $yAxis);
+            
+            if ($fileData) {
+                foreach ($fileData as $category => $value) {
+                    if (!isset($allData[$category])) {
+                        $allData[$category] = [];
+                    }
+                    
+                    if (!isset($allData[$category][$level])) {
+                        $allData[$category][$level] = 0;
+                    }
+                    
+                    $allData[$category][$level] += $value;
+                }
+            }
+        }
+
+        // Ordenar por categorías alfabéticamente
+        ksort($allData);
+
+        // Limitar resultados si se especifica
+        if ($limit) {
+            $allData = array_slice($allData, 0, $limit, true);
+        }
+
+        // Preparar categorías
+        $categories = array_keys($allData);
+
+        // Preparar series por nivel educativo en el orden correcto
+        $uniqueLevels = array_unique($processedLevels);
+        $orderedLevels = [];
+        
+        foreach ($levelOrder as $orderLevel) {
+            if (in_array($orderLevel, $uniqueLevels)) {
+                $orderedLevels[] = $orderLevel;
+            }
+        }
+        
+        foreach ($uniqueLevels as $level) {
+            if (!in_array($level, $orderedLevels)) {
+                $orderedLevels[] = $level;
+            }
+        }
+
+        $series = [];
+        foreach ($orderedLevels as $level) {
+            $levelData = [];
+            foreach ($categories as $category) {
+                $levelData[] = $allData[$category][$level] ?? 0;
+            }
+            
+            $series[] = [
+                'name' => $level,
+                'data' => $levelData,
+                'color' => $this->getLevelColor($level)
+            ];
+        }
+
+        // Para tablas, también incluir datos de totales
+        $totals = [];
+        foreach ($categories as $category) {
+            $total = 0;
+            foreach ($orderedLevels as $level) {
+                $total += $allData[$category][$level] ?? 0;
+            }
+            $totals[] = $total;
+        }
+
+        return [
+            'categories' => $categories,
+            'series' => $series,
+            'levels' => $orderedLevels,
+            'totals' => $totals,
+            'type' => 'table' // Identificar que es una tabla
+        ];
     }
 
     private function processMultipleFiles($fileIds, $xAxis, $yAxis, $limit = null)
@@ -642,7 +787,8 @@ class ChartController extends Controller
         $colors = [
             'Inicial' => '#3B82F6',   // Azul
             'Primaria' => '#10B981',  // Verde
-            'Secundaria' => '#8B5CF6' // Púrpura
+            'Secundaria' => '#8B5CF6', // Púrpura
+            'Global' => '#6B7280'     // Gris
         ];
 
         return $colors[$level] ?? '#6B7280'; // Gris por defecto
@@ -653,6 +799,18 @@ class ChartController extends Controller
     {
         $originalName = strtolower($file->original_name);
         $documentType = strtolower($file->document_type);
+        
+        // Patrones para detectar nivel global/general
+        $globalPatterns = [
+            'global',
+            'general',
+            'consolidado',
+            'todos los niveles',
+            'multinivel',
+            'resumen',
+            'total',
+            'conjunto'
+        ];
         
         // Patrones para detectar nivel inicial
         $inicialPatterns = [
@@ -704,7 +862,13 @@ class ChartController extends Controller
             'quinto de secundaria'
         ];
         
-        // Verificar en el nombre del archivo
+        // Verificar en el nombre del archivo - GLOBAL PRIMERO
+        foreach ($globalPatterns as $pattern) {
+            if (strpos($originalName, $pattern) !== false) {
+                return 'Global';
+            }
+        }
+        
         foreach ($inicialPatterns as $pattern) {
             if (strpos($originalName, $pattern) !== false) {
                 return 'Inicial';
@@ -723,7 +887,13 @@ class ChartController extends Controller
             }
         }
         
-        // Verificar en el document_type
+        // Verificar en el document_type - GLOBAL PRIMERO
+        foreach ($globalPatterns as $pattern) {
+            if (strpos($documentType, $pattern) !== false) {
+                return 'Global';
+            }
+        }
+        
         foreach ($inicialPatterns as $pattern) {
             if (strpos($documentType, $pattern) !== false) {
                 return 'Inicial';
@@ -746,7 +916,7 @@ class ChartController extends Controller
         $normalizedType = ucfirst(strtolower($documentType));
         
         // Mapeo directo si coincide con los valores esperados
-        if (in_array($normalizedType, ['Inicial', 'Primaria', 'Secundaria'])) {
+        if (in_array($normalizedType, ['Inicial', 'Primaria', 'Secundaria', 'Global'])) {
             return $normalizedType;
         }
         
@@ -771,7 +941,7 @@ class ChartController extends Controller
         ]);
 
         $allData = [];
-        $levelOrder = ['Inicial', 'Primaria', 'Secundaria'];
+        $levelOrder = ['Inicial', 'Primaria', 'Secundaria', 'Global']; // Agregar Global al orden
         $processedLevels = [];
 
         // Obtener los niveles asignados desde el frontend
@@ -900,36 +1070,7 @@ class ChartController extends Controller
         return $chartData;
     }
 
-    // Método para asignar colores diferenciados por nivel y métrica
-    private function getColorForLevelAndMetric($level, $metric, $allMetrics)
-    {
-        // Colores base por nivel
-        $baseColors = [
-            'Inicial' => ['#3B82F6', '#1E40AF', '#60A5FA', '#93C5FD', '#DBEAFE'],
-            'Primaria' => ['#10B981', '#047857', '#34D399', '#6EE7B7', '#D1FAE5'],
-            'Secundaria' => ['#8B5CF6', '#5B21B6', '#A78BFA', '#C4B5FD', '#EDE9FE']
-        ];
-        
-        $defaultColors = ['#6B7280', '#4B5563', '#9CA3AF', '#D1D5DB', '#F3F4F6'];
-        
-        $levelColors = $baseColors[$level] ?? $defaultColors;
-        
-        // Obtener índice de la métrica
-        $metricIndex = array_search($metric, array_map(function($m) {
-            return self::AXIS_OPTIONS['y_axis'][$m] ?? $m;
-        }, $allMetrics));
-        
-        if ($metricIndex === false) {
-            $metricIndex = 0;
-        }
-        
-        // Usar módulo para evitar desbordamiento
-        $colorIndex = $metricIndex % count($levelColors);
-        
-        return $levelColors[$colorIndex];
-    }
-
-    public function processMultipleFilesWithMultipleY($fileIds, $xAxis, $yAxes, $request, $limit = null)
+    private function processMultipleFilesWithMultipleY($fileIds, $xAxis, $yAxes, $request, $limit = null)
     {
         Log::info('Procesando múltiples archivos con múltiples valores Y', [
             'file_ids' => $fileIds,
@@ -1103,4 +1244,6 @@ class ChartController extends Controller
             'categories' => array_column($pieData, 'name')
         ];
     }
+
+    
 }

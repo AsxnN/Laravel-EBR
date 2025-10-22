@@ -94,56 +94,172 @@
                 <div class="p-6 lg:p-8">
                     <!-- Selección de plantilla -->
                     <div class="mb-6">
-                        <label for="templateSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="templateSelect" class="block text-sm font-medium text-gray-700 mb-4">
                             Seleccionar Plantilla *
                         </label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($templates as $template)
-                                <div class="template-card border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                                     data-template-id="{{ $template->id }}">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                                                @if($template->chart_type == 'bar' || $template->chart_type == 'column')
-                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                                    </svg>
-                                                @elseif($template->chart_type == 'line')
-                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
-                                                    </svg>
-                                                @else
-                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                                                    </svg>
-                                                @endif
-                                            </div>
-                                            <input type="radio" 
-                                                   name="selected_template" 
-                                                   value="{{ $template->id }}" 
-                                                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                            {{ $template->chart_type_label }}
-                                        </span>
-                                    </div>
-                                    
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $template->name }}</h3>
-                                    <p class="text-sm text-gray-600 mb-3">{{ $template->description }}</p>
-                                    
-                                    <div class="grid grid-cols-2 gap-2 text-xs">
-                                        <div class="bg-gray-50 rounded p-2">
-                                            <span class="font-medium text-gray-700">Eje X:</span>
-                                            <span class="text-gray-600">{{ $template->x_axis_label }}</span>
-                                        </div>
-                                        <div class="bg-gray-50 rounded p-2">
-                                            <span class="font-medium text-gray-700">Eje Y:</span>
-                                            <span class="text-gray-600">{{ $template->y_axis_label }}</span>
-                                        </div>
-                                    </div>
+                        
+                        <!-- PLANTILLAS DE UN SOLO NIVEL -->
+                        <div class="mb-6">
+                            <div class="flex items-center mb-3">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                    <svg class="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                                    </svg>
                                 </div>
-                            @endforeach
+                                <div>
+                                    <h3 class="text-base font-semibold text-gray-900">Plantillas de Un Solo Nivel</h3>
+                                    <p class="text-sm text-gray-600">Compara múltiples archivos del mismo nivel educativo</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                                @foreach($templates->where('level_type', 'single') as $template)
+                                    <div class="template-card bg-white border-2 border-blue-300 rounded-lg p-4 hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg transition-all duration-200 cursor-pointer relative"
+                                         data-template-id="{{ $template->id }}">
+                                        <!-- Badge "Un Solo Nivel" -->
+                                        <div class="absolute -top-2 -right-2">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5z"></path>
+                                                </svg>
+                                                1 Nivel
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="flex items-start justify-between mb-3">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center ring-2 ring-blue-300">
+                                                    @if($template->chart_type == 'bar' || $template->chart_type == 'column')
+                                                        <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                                        </svg>
+                                                    @elseif($template->chart_type == 'line')
+                                                        <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
+                                                        </svg>
+                                                    @else
+                                                        <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                                        </svg>
+                                                    @endif
+                                                </div>
+                                                <input type="radio" 
+                                                       name="selected_template" 
+                                                       value="{{ $template->id }}" 
+                                                       class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-blue-300">
+                                            </div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-300">
+                                                {{ $template->chart_type_label }}
+                                            </span>
+                                        </div>
+                                        
+                                        <h3 class="text-base font-semibold text-gray-900 mb-2">{{ $template->name }}</h3>
+                                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $template->description }}</p>
+                                        
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div class="bg-blue-50 rounded p-2 border border-blue-200">
+                                                <span class="font-medium text-blue-900">Eje X:</span>
+                                                <span class="text-blue-700 block truncate">{{ $template->x_axis_label }}</span>
+                                            </div>
+                                            <div class="bg-blue-50 rounded p-2 border border-blue-200">
+                                                <span class="font-medium text-blue-900">Eje Y:</span>
+                                                <span class="text-blue-700 block truncate">{{ $template->y_axis_label }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                
+                                @if($templates->where('level_type', 'single')->count() == 0)
+                                    <div class="col-span-3 text-center py-8 text-gray-500">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        <p>No hay plantillas de un solo nivel disponibles</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- PLANTILLAS MULTI-NIVEL -->
+                        <div class="mb-6">
+                            <div class="flex items-center mb-3">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                    <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-semibold text-gray-900">Plantillas Multi-Nivel</h3>
+                                    <p class="text-sm text-gray-600">Compara archivos de diferentes niveles educativos</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                                @foreach($templates->where('level_type', 'multiple') as $template)
+                                    <div class="template-card bg-white border-2 border-green-300 rounded-lg p-4 hover:bg-green-50 hover:border-green-500 hover:shadow-lg transition-all duration-200 cursor-pointer relative"
+                                         data-template-id="{{ $template->id }}">
+                                        <!-- Badge "Multi-Nivel" -->
+                                        <div class="absolute -top-2 -right-2">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-600 text-white shadow-md">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z"></path>
+                                                </svg>
+                                                Multi-Nivel
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="flex items-start justify-between mb-3">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center ring-2 ring-green-300">
+                                                    @if($template->chart_type == 'bar' || $template->chart_type == 'column')
+                                                        <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                                        </svg>
+                                                    @elseif($template->chart_type == 'line')
+                                                        <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
+                                                        </svg>
+                                                    @else
+                                                        <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                                        </svg>
+                                                    @endif
+                                                </div>
+                                                <input type="radio" 
+                                                       name="selected_template" 
+                                                       value="{{ $template->id }}" 
+                                                       class="h-5 w-5 text-green-600 focus:ring-green-500 border-green-300">
+                                            </div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300">
+                                                {{ $template->chart_type_label }}
+                                            </span>
+                                        </div>
+                                        
+                                        <h3 class="text-base font-semibold text-gray-900 mb-2">{{ $template->name }}</h3>
+                                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $template->description }}</p>
+                                        
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div class="bg-green-50 rounded p-2 border border-green-200">
+                                                <span class="font-medium text-green-900">Eje X:</span>
+                                                <span class="text-green-700 block truncate">{{ $template->x_axis_label }}</span>
+                                            </div>
+                                            <div class="bg-green-50 rounded p-2 border border-green-200">
+                                                <span class="font-medium text-green-900">Eje Y:</span>
+                                                <span class="text-green-700 block truncate">{{ $template->y_axis_label }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                
+                                @if($templates->where('level_type', 'multiple')->count() == 0)
+                                    <div class="col-span-3 text-center py-8 text-gray-500">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        <p>No hay plantillas multi-nivel disponibles</p>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -155,150 +271,237 @@
                     </div>
 
                     <!-- Selección de archivos por nivel educativo -->
-                    <div id="fileSelectionSection" class="hidden">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">
-                            Seleccionar Archivos por Nivel Educativo
-                        </h3>
-                        
-                        @php
-                            $allFiles = $files->flatten();
-                            $levels = [
-                                'inicial' => ['name' => 'Inicial', 'color' => 'blue', 'icon' => '🎨'],
-                                'primaria' => ['name' => 'Primaria', 'color' => 'green', 'icon' => '📚'],
-                                'secundaria' => ['name' => 'Secundaria', 'color' => 'purple', 'icon' => '🎓']
-                            ];
-                        @endphp
+                    @php
+                        $allFiles = $files->flatten();
+                        $levels = [
+                            'inicial' => ['name' => 'Inicial', 'color' => 'blue', 'icon' => '🎨'],
+                            'primaria' => ['name' => 'Primaria', 'color' => 'green', 'icon' => '📚'],
+                            'secundaria' => ['name' => 'Secundaria', 'color' => 'purple', 'icon' => '🎓'],
+                            'global' => ['name' => 'Global', 'color' => 'gray', 'icon' => '🌐']
+                        ];
+                    @endphp
 
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                            @foreach($levels as $levelKey => $levelInfo)
-                                <div class="border border-gray-200 rounded-lg">
-                                    <div class="bg-{{ $levelInfo['color'] }}-50 px-4 py-3 border-b border-gray-200">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center">
-                                                <span class="text-{{ $levelInfo['color'] }}-600 text-lg mr-2">{{ $levelInfo['icon'] }}</span>
-                                                <div>
-                                                    <h3 class="text-sm font-medium text-gray-900">
-                                                        Nivel {{ $levelInfo['name'] }}
-                                                    </h3>
-                                                    <p class="text-xs text-gray-500">
-                                                        Selecciona uno o más archivos
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <label class="inline-flex items-center">
-                                                <input type="checkbox" 
-                                                    class="form-checkbox h-4 w-4 text-{{ $levelInfo['color'] }}-600 select-all-level" 
-                                                    data-level="{{ $levelKey }}">
-                                                <span class="ml-2 text-xs text-gray-600">Todos</span>
-                                            </label>
-                                        </div>
+                    <!-- Contenedor principal de selección de archivos -->
+                    <div id="fileSelectionSection" class="hidden">
+                        
+                        <!-- ============================================ -->
+                        <!-- SECCIÓN PARA PLANTILLAS DE UN SOLO NIVEL -->
+                        <!-- ============================================ -->
+                        <div id="singleLevelSection" class="hidden">
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
                                     </div>
-                                    
-                                    <div class="p-4 max-h-64 overflow-y-auto">
-                                        @php $levelFiles = $allFiles->where('document_type', $levelKey) @endphp
-                                        
-                                        @if($levelFiles->count() > 0)
-                                            <div class="space-y-2">
-                                                @foreach($levelFiles as $file)
-                                                    <label class="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                                        <input type="checkbox" 
-                                                            class="form-checkbox h-4 w-4 text-{{ $levelInfo['color'] }}-600 file-checkbox" 
-                                                            value="{{ $file->id }}"
-                                                            data-level="{{ $levelKey }}"
-                                                            data-intended-level="{{ $levelKey }}"
-                                                            data-file-id="{{ $file->id }}"
-                                                            data-document-type="{{ $file->document_type }}"
-                                                            data-original-name="{{ $file->original_name }}">
-                                                        
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="text-sm font-medium text-gray-900 truncate">
-                                                                {{ $file->original_name }}
-                                                            </div>
-                                                            <div class="text-xs text-gray-500 mt-1">
-                                                                <div class="flex items-center space-x-2">
-                                                                    <span>{{ number_format($file->total_students ?? 0) }} estudiantes</span>
-                                                                    <span>•</span>
-                                                                    <span>{{ $file->uploaded_at->format('d/m/Y') }}</span>
-                                                                </div>
-                                                                @if($file->processing_summary && isset($file->processing_summary['by_ugel']))
-                                                                    <div class="text-xs text-gray-400 mt-1">
-                                                                        {{ count($file->processing_summary['by_ugel']) }} UGEL(s)
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                    </label>
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            <div class="text-center py-4">
-                                                <div class="text-gray-400 text-sm">
-                                                    No hay archivos de {{ $levelInfo['name'] }}
-                                                </div>
-                                                <a href="{{ route('files.create') }}" class="text-xs text-{{ $levelInfo['color'] }}-600 hover:text-{{ $levelInfo['color'] }}-500">
-                                                    Subir archivo
-                                                </a>
-                                            </div>
-                                        @endif
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-blue-800">Comparación de Un Solo Nivel</h3>
+                                        <p class="mt-1 text-sm text-blue-700">
+                                            Selecciona un nivel educativo y elige múltiples archivos de ese mismo nivel para compararlos.
+                                        </p>
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Información mejorada del resumen de selección -->
-                        <div id="selectionSummary" class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
-                            <h3 class="text-sm font-medium text-gray-900 mb-3">Resumen de Selección</h3>
-                            <div id="summaryContent" class="text-sm text-gray-600">
-                                <!-- Se llena dinámicamente -->
                             </div>
-                            <div id="multipleFilesWarning" class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 hidden">
-                                <strong>Nota:</strong> Tienes múltiples archivos del mismo nivel. Cada archivo aparecerá como una serie separada en el gráfico.
-                            </div>
-                        </div>
 
-                        <!-- Título del gráfico y notas -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label for="chart_title" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Título del Gráfico *
+                            <!-- 1. Selección del Nivel Educativo -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">
+                                    1. Selecciona el Nivel Educativo *
                                 </label>
-                                <input type="text" id="chart_title" name="chart_title" 
-                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                       placeholder="Ej: Matrícula por UGEL 2025">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    @foreach($levels as $levelKey => $levelInfo)
+                                        <label class="relative">
+                                            <input type="radio" name="single_level_selection" value="{{ ucfirst($levelKey) }}" 
+                                                   class="sr-only peer single-level-radio">
+                                            <div class="bg-white border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-{{ $levelInfo['color'] }}-300 peer-checked:border-{{ $levelInfo['color'] }}-600 peer-checked:bg-{{ $levelInfo['color'] }}-50 transition-colors">
+                                                <div class="text-center">
+                                                    <div class="text-2xl mb-2">{{ $levelInfo['icon'] }}</div>
+                                                    <div class="font-medium text-gray-900">{{ $levelInfo['name'] }}</div>
+                                                    <div id="single-{{ $levelKey }}-count" class="text-xs text-gray-500 mt-1">
+                                                        0 archivos
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
-                            <div>
-                                <label for="chart_notes" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Notas (Opcional)
-                                </label>
-                                <textarea id="chart_notes" name="chart_notes" rows="3" 
-                                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                          placeholder="Notas adicionales sobre este gráfico..."></textarea>
+
+                            <!-- 2. Archivos del Nivel Seleccionado -->
+                            <div id="singleLevelFilesContainer" class="hidden">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        2. Selecciona los Archivos a Comparar
+                                    </label>
+                                    <div>
+                                        <button type="button" onclick="selectAllSingleLevel()" 
+                                                class="text-sm text-blue-600 hover:text-blue-800">
+                                            Seleccionar todos
+                                        </button>
+                                        <span class="text-gray-300 mx-2">|</span>
+                                        <button type="button" onclick="clearAllSingleLevel()" 
+                                                class="text-sm text-gray-600 hover:text-gray-800">
+                                            Deseleccionar todos
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Mensaje cuando no hay nivel seleccionado -->
+                                <div id="no-level-message" class="text-center py-8 text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path>
+                                    </svg>
+                                    <p>Selecciona un nivel educativo para ver los archivos disponibles</p>
+                                </div>
+
+                                <div id="singleLevelFilesList" class="space-y-2">
+                                    <!-- Los archivos se cargan dinámicamente aquí -->
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Botones de acción -->
-                        <div class="flex items-center justify-between">
-                            <div class="text-sm text-gray-500">
-                                <span id="fileCount">0</span> archivo(s) seleccionado(s)
+                        <!-- ============================================ -->
+                        <!-- SECCIÓN PARA PLANTILLAS MULTI-NIVEL -->
+                        <!-- ============================================ -->
+                        <div id="multiLevelSection" class="hidden">
+                            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-green-800">Comparación Multi-Nivel</h3>
+                                        <p class="mt-1 text-sm text-green-700">
+                                            Selecciona archivos de diferentes niveles educativos para compararlos entre sí.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex space-x-4">
-                                <button type="button" 
-                                        id="previewChartBtn"
-                                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                    Vista Previa
-                                </button>
-                                <button type="button" 
-                                        id="addChartBtn"
-                                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Agregar al Reporte
-                                </button>
+
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                                Seleccionar Archivos por Nivel Educativo
+                            </h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                                @foreach($levels as $levelKey => $levelInfo)
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <div class="bg-{{ $levelInfo['color'] }}-50 px-4 py-3 border-b border-gray-200">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    <span class="text-lg mr-2">{{ $levelInfo['icon'] }}</span>
+                                                    <div>
+                                                        <h3 class="text-sm font-medium text-gray-900">{{ $levelInfo['name'] }}</h3>
+                                                        <p class="text-xs text-gray-500">Selecciona archivos</p>
+                                                    </div>
+                                                </div>
+                                                <label class="inline-flex items-center">
+                                                    <input type="checkbox" 
+                                                        class="form-checkbox h-4 w-4 text-{{ $levelInfo['color'] }}-600 select-all-level" 
+                                                        data-level="{{ $levelKey }}">
+                                                    <span class="ml-2 text-xs text-gray-600">Todos</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="p-4 max-h-64 overflow-y-auto">
+                                            @php $levelFiles = $allFiles->where('document_type', $levelKey) @endphp
+                                            
+                                            @if($levelFiles->count() > 0)
+                                                <div class="space-y-2">
+                                                    @foreach($levelFiles as $file)
+                                                        <label class="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer border border-gray-100">
+                                                            <input type="checkbox" 
+                                                                class="form-checkbox h-4 w-4 text-{{ $levelInfo['color'] }}-600 file-checkbox multi-level-checkbox" 
+                                                                value="{{ $file->id }}"
+                                                                data-level="{{ $levelKey }}"
+                                                                data-intended-level="{{ $levelKey }}"
+                                                                data-file-id="{{ $file->id }}"
+                                                                data-document-type="{{ $file->document_type }}"
+                                                                data-original-name="{{ basename($file->file_path ?? $file->original_name) }}">
+                                                            
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="text-sm font-medium text-gray-900 truncate">
+                                                                    {{ basename($file->file_path ?? $file->original_name) }}
+                                                                </div>
+                                                                <div class="text-xs text-gray-500 mt-1">
+                                                                    <span>{{ number_format($file->total_students ?? 0) }} estudiantes</span>
+                                                                    <span class="mx-1">•</span>
+                                                                    <span>{{ $file->uploaded_at->format('d/m/Y') }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <div class="text-center py-4 text-gray-400 text-sm">
+                                                    No hay archivos de {{ $levelInfo['name'] }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- SECCIÓN COMÚN: Configuración del Gráfico -->
+                        <!-- ============================================ -->
+                        <div id="chartConfigSection" class="hidden">
+                            <!-- Resumen de Selección -->
+                            <div id="selectionSummary" class="mb-6 p-4 bg-gray-50 rounded-lg hidden">
+                                <h3 class="text-sm font-medium text-gray-900 mb-3">Resumen de Selección</h3>
+                                <div id="summaryContent" class="text-sm text-gray-600">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+                            </div>
+
+                            <!-- Título y Notas -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label for="chart_title" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Título del Gráfico *
+                                    </label>
+                                    <input type="text" id="chart_title" name="chart_title" 
+                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                           placeholder="Ej: Matrícula por UGEL 2025">
+                                </div>
+                                <div>
+                                    <label for="chart_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Notas (Opcional)
+                                    </label>
+                                    <textarea id="chart_notes" name="chart_notes" rows="3" 
+                                              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                              placeholder="Notas adicionales sobre este gráfico..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Botones de Acción -->
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">
+                                    <span id="fileCount">0</span> archivo(s) seleccionado(s)
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button type="button" 
+                                            id="previewChartBtn"
+                                            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        Vista Previa
+                                    </button>
+                                    <button type="button" 
+                                            id="addChartBtn"
+                                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        Agregar al Reporte
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -406,10 +609,14 @@
     let currentPreviewChart = null;
     let selectedTemplate = null;
     const templates = @json($templates);
+    const allFiles = @json($allFiles->values());
+
+    console.log('📁 Archivos totales:', allFiles.length);
+    console.log('📋 Plantillas:', templates.length);
 
     document.addEventListener('DOMContentLoaded', function() {
         initializeEventListeners();
-        updateFileSelectionState();
+        updateFileCounts();
         
         // Renderizar gráficos existentes
         @foreach($report->charts as $chart)
@@ -418,152 +625,379 @@
     });
 
     function initializeEventListeners() {
-        // Actualizar información del reporte
-        document.getElementById('updateReportForm').addEventListener('submit', updateReport);
+        // Form del reporte
+        document.getElementById('updateReportForm')?.addEventListener('submit', updateReport);
 
         // Selección de plantillas
         document.querySelectorAll('.template-card').forEach(card => {
             card.addEventListener('click', function() {
                 const radio = this.querySelector('input[type="radio"]');
-                radio.checked = true;
-                selectTemplate(radio.value);
-            });
-        });
-
-        document.querySelectorAll('input[name="selected_template"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    selectTemplate(this.value);
+                if (radio) {
+                    radio.checked = true;
+                    // Obtener el level_type directamente de la plantilla
+                    const templateId = radio.value;
+                    const template = templates.find(t => t.id == templateId);
+                    if (template) {
+                        console.log('🎯 Template seleccionado:', template.name, '| Tipo:', template.level_type);
+                        selectTemplate(templateId, template.level_type);
+                    }
                 }
             });
         });
 
-        // Manejar selección "Seleccionar todos"
+        // Radio buttons de nivel (single level)
+        document.querySelectorAll('.single-level-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    const selectedLevel = this.value;
+                    console.log('📍 Nivel seleccionado:', selectedLevel);
+                    loadSingleLevelFiles(selectedLevel);
+                }
+            });
+        });
+
+        // Multi-level checkboxes
         document.querySelectorAll('.select-all-level').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const level = this.dataset.level;
-                const levelCheckboxes = document.querySelectorAll(`input[data-level="${level}"].file-checkbox`);
-                
-                levelCheckboxes.forEach(cb => {
-                    cb.checked = this.checked;
-                });
-                
+                document.querySelectorAll(`input[data-level="${level}"].multi-level-checkbox`)
+                    .forEach(cb => cb.checked = this.checked);
                 updateFileSelectionState();
             });
         });
 
-        // Manejar selección individual de archivos
-        document.querySelectorAll('.file-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                updateFileSelectionState();
-                
-                // Actualizar el checkbox "Seleccionar todos" correspondiente
-                const level = this.dataset.level;
-                const levelCheckboxes = document.querySelectorAll(`input[data-level="${level}"].file-checkbox`);
-                const selectAllCheckbox = document.querySelector(`input[data-level="${level}"].select-all-level`);
-                
-                const checkedCount = document.querySelectorAll(`input[data-level="${level}"].file-checkbox:checked`).length;
-                selectAllCheckbox.checked = checkedCount === levelCheckboxes.length;
-                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < levelCheckboxes.length;
-            });
+        document.querySelectorAll('.multi-level-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateFileSelectionState);
         });
 
         // Botones de acción
         document.getElementById('previewChartBtn')?.addEventListener('click', previewChart);
         document.getElementById('addChartBtn')?.addEventListener('click', addChartToReport);
-    }
-
-    function selectTemplate(templateId) {
-        selectedTemplate = templates.find(t => t.id == templateId);
         
-        if (selectedTemplate) {
-            showTemplateInfo(selectedTemplate);
-            document.getElementById('fileSelectionSection').classList.remove('hidden');
-            
-            // Auto-generar título del gráfico si está vacío
-            const titleInput = document.getElementById('chart_title');
-            if (!titleInput.value.trim()) {
-                titleInput.value = selectedTemplate.name;
-            }
-        }
+        // Input de título
+        document.getElementById('chart_title')?.addEventListener('input', updateFileSelectionState);
     }
 
     function showTemplateInfo(template) {
         const templateDetails = document.getElementById('templateDetails');
-        if (templateDetails) {
-            templateDetails.innerHTML = `
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h4 class="text-lg font-medium text-gray-900">${template.name}</h4>
-                        <p class="text-sm text-gray-600 mt-1">${template.description || ''}</p>
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        if (!templateDetails) return;
+
+        const levelTypeColor = template.level_type === 'single' ? 'blue' : 'green';
+        const levelTypeText = template.level_type === 'single' ? 'Un Nivel' : 'Multi-Nivel';
+        
+        templateDetails.innerHTML = `
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <h4 class="text-lg font-medium text-gray-900">${template.name}</h4>
+                    <p class="text-sm text-gray-600 mt-1">${template.description || ''}</p>
+                </div>
+                <div class="flex flex-col items-end space-y-1 ml-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                         ${template.chart_type_label || template.chart_type}
                     </span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${levelTypeColor}-100 text-${levelTypeColor}-800">
+                        ${levelTypeText}
+                    </span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div class="bg-white rounded-lg p-3 border">
-                        <h5 class="text-sm font-medium text-gray-900">Eje X</h5>
-                        <p class="text-sm text-blue-600">${template.x_axis_label || template.x_axis}</p>
-                    </div>
-                    <div class="bg-white rounded-lg p-3 border">
-                        <h5 class="text-sm font-medium text-gray-900">Eje Y</h5>
-                        <p class="text-sm text-blue-600">${template.y_axis_label || template.y_axis}</p>
-                    </div>
-                    <div class="bg-white rounded-lg p-3 border">
-                        <h5 class="text-sm font-medium text-gray-900">Segmentación</h5>
-                        <p class="text-sm text-blue-600">Por Nivel Educativo</p>
-                    </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
+                    <h5 class="text-xs font-medium text-gray-500 uppercase">Eje X</h5>
+                    <p class="text-sm text-gray-900 font-medium mt-1">${template.x_axis_label || template.x_axis}</p>
                 </div>
-                ${template.purpose ? `
-                <div class="mt-3 p-3 bg-blue-50 rounded-lg">
-                    <h5 class="text-sm font-medium text-blue-900">Propósito:</h5>
-                    <p class="text-sm text-blue-800">${template.purpose}</p>
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
+                    <h5 class="text-xs font-medium text-gray-500 uppercase">Eje Y</h5>
+                    <p class="text-sm text-gray-900 font-medium mt-1">${template.y_axis_label || template.y_axis}</p>
                 </div>
-                ` : ''}
-            `;
-            
-            document.getElementById('templateInfo').classList.remove('hidden');
-        }
-    }
-
-    function updateFileSelectionState() {
-        const selectedFiles = document.querySelectorAll('.file-checkbox:checked');
-        const fileCount = selectedFiles.length;
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
+                    <h5 class="text-xs font-medium text-gray-500 uppercase">Comparación</h5>
+                    <p class="text-sm text-gray-900 font-medium mt-1">
+                        ${template.level_type === 'single' ? 'Mismo nivel' : 'Entre niveles'}
+                    </p>
+                </div>
+            </div>
+            ${template.purpose ? `
+            <div class="mt-4 p-3 bg-${levelTypeColor}-50 border border-${levelTypeColor}-200 rounded-lg">
+                <h5 class="text-xs font-medium text-${levelTypeColor}-900 uppercase mb-1">Propósito</h5>
+                <p class="text-sm text-${levelTypeColor}-800">${template.purpose}</p>
+            </div>
+            ` : ''}
+        `;
         
-        const fileCountElement = document.getElementById('fileCount');
-        if (fileCountElement) {
-            fileCountElement.textContent = fileCount;
-        }
-        
-        const previewBtn = document.getElementById('previewChartBtn');
-        const addBtn = document.getElementById('addChartBtn');
-        
-        if (previewBtn) {
-            previewBtn.disabled = fileCount === 0 || !selectedTemplate;
-        }
-        
-        if (addBtn) {
-            const chartTitle = document.getElementById('chart_title');
-            addBtn.disabled = fileCount === 0 || !selectedTemplate || !chartTitle?.value.trim();
-        }
+        document.getElementById('templateInfo')?.classList.remove('hidden');
     }
 
     function debugFileSelection() {
-    const selectedFiles = document.querySelectorAll('.file-checkbox:checked');
-    console.log('=== DEBUG FILE SELECTION ===');
-    
-    selectedFiles.forEach((checkbox, index) => {
-        console.log(`Archivo ${index + 1}:`, {
-            fileId: checkbox.dataset.fileId,
-            documentType: checkbox.dataset.documentType,
-            originalName: checkbox.dataset.originalName,
-            level: checkbox.dataset.level
+        // ✅ CAMBIO: Seleccionar según el tipo
+        let selectedFiles;
+        if (selectedTemplate?.level_type === 'single') {
+            selectedFiles = document.querySelectorAll('.single-level-checkbox:checked');
+        } else {
+            selectedFiles = document.querySelectorAll('.multi-level-checkbox:checked');
+        }
+        
+        console.log('=== DEBUG FILE SELECTION ===');
+        console.log('Template type:', selectedTemplate?.level_type);
+        console.log('Total selected:', selectedFiles.length);
+        
+        selectedFiles.forEach((checkbox, index) => {
+            console.log(`Archivo ${index + 1}:`, {
+                fileId: checkbox.dataset.fileId || checkbox.value,
+                documentType: checkbox.dataset.documentType,
+                originalName: checkbox.dataset.originalName,
+                level: checkbox.dataset.level
+            });
         });
-    });
+        
+        console.log('============================');
+    }
+
+    function selectTemplate(templateId, levelType) {
+        selectedTemplate = templates.find(t => t.id == templateId);
+        
+        if (!selectedTemplate) {
+            console.error('❌ Plantilla no encontrada:', templateId);
+            return;
+        }
+
+        console.log('✅ Plantilla seleccionada:', selectedTemplate.name);
+        console.log('📊 Tipo:', levelType);
+        
+        // Mostrar info de la plantilla
+        showTemplateInfo(selectedTemplate);
+        
+        // Limpiar selecciones previas
+        clearAllSelections();
+        
+        // Ocultar TODAS las secciones
+        document.getElementById('fileSelectionSection')?.classList.remove('hidden');
+        document.getElementById('singleLevelSection')?.classList.add('hidden');
+        document.getElementById('multiLevelSection')?.classList.add('hidden');
+        document.getElementById('chartConfigSection')?.classList.add('hidden');
+
+        // Mostrar la sección correspondiente
+        if (levelType === 'single') {
+            console.log('🔵 Mostrando modo SINGLE LEVEL');
+            document.getElementById('singleLevelSection')?.classList.remove('hidden');
+            document.getElementById('chartConfigSection')?.classList.remove('hidden');
+        } else if (levelType === 'multiple') {
+            console.log('🟢 Mostrando modo MULTI LEVEL');
+            document.getElementById('multiLevelSection')?.classList.remove('hidden');
+            document.getElementById('chartConfigSection')?.classList.remove('hidden');
+        }
+
+        // Auto-completar título
+        const titleInput = document.getElementById('chart_title');
+        if (titleInput && !titleInput.value.trim()) {
+            titleInput.value = selectedTemplate.name;
+        }
+
+        // Scroll suave
+        setTimeout(() => {
+            const targetSection = levelType === 'single' 
+                ? document.getElementById('singleLevelSection')
+                : document.getElementById('multiLevelSection');
+            
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 150);
+    }
     
-    console.log('============================');
-}
+
+    function clearAllSelections() {
+        // Limpiar single level
+        document.querySelectorAll('.single-level-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.single-level-radio').forEach(radio => radio.checked = false);
+        
+        // Limpiar multi level
+        document.querySelectorAll('.multi-level-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.select-all-level').forEach(cb => cb.checked = false);
+        
+        // Ocultar contenedor de archivos single
+        document.getElementById('singleLevelFilesContainer')?.classList.add('hidden');
+        
+        // Resetear contador
+        const fileCountElement = document.getElementById('fileCount');
+        if (fileCountElement) fileCountElement.textContent = '0';
+        
+        // Ocultar resumen
+        document.getElementById('selectionSummary')?.classList.add('hidden');
+        
+        // Limpiar formulario
+        document.getElementById('chart_title').value = '';
+        document.getElementById('chart_notes').value = '';
+    }
+
+    function updateFileCounts() {
+        const levels = ['inicial', 'primaria', 'secundaria', 'global'];
+        
+        levels.forEach(level => {
+            const count = allFiles.filter(file => 
+                file.document_type && file.document_type.toLowerCase() === level
+            ).length;
+            
+            const element = document.getElementById(`single-${level}-count`);
+            if (element) {
+                element.textContent = `${count} archivo${count !== 1 ? 's' : ''}`;
+            }
+        });
+    }
+
+    function loadSingleLevelFiles(levelName) {
+        const levelKey = levelName.toLowerCase();
+        const filesContainer = document.getElementById('singleLevelFilesContainer');
+        const filesList = document.getElementById('singleLevelFilesList');
+        
+        if (!filesList) {
+            console.error('❌ Elemento singleLevelFilesList no encontrado');
+            return;
+        }
+
+        const levelFiles = allFiles.filter(file => 
+            file.document_type && file.document_type.toLowerCase() === levelKey
+        );
+
+        console.log(`📂 Archivos de ${levelName}:`, levelFiles.length);
+
+        if (levelFiles.length === 0) {
+            filesList.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <p class="font-medium">No hay archivos de ${levelName}</p>
+                    <a href="/files/create" class="text-sm text-blue-600 hover:text-blue-500 mt-2 inline-block">
+                        Subir archivo de ${levelName}
+                    </a>
+                </div>
+            `;
+            filesContainer?.classList.remove('hidden');
+            return;
+        }
+
+        filesList.innerHTML = levelFiles.map(file => {
+            const fileName = file.file_path ? file.file_path.split('/').pop() : (file.original_name || 'Sin nombre');
+            const uploadDate = file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString('es-ES') : 'N/A';
+            
+            return `
+                <label class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer">
+                    <input type="checkbox" 
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded single-level-checkbox" 
+                           value="${file.id}"
+                           data-level="${levelKey}"
+                           data-file-id="${file.id}"
+                           data-original-name="${fileName}"
+                           onchange="updateFileSelectionState()">
+                    <div class="ml-3 flex-1">
+                        <div class="text-sm font-medium text-gray-900">${fileName}</div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span>👥 ${(file.total_students || 0).toLocaleString()} estudiantes</span>
+                            <span class="mx-2">•</span>
+                            <span>📅 ${uploadDate}</span>
+                        </div>
+                    </div>
+                </label>
+            `;
+        }).join('');
+
+        filesContainer?.classList.remove('hidden');
+        updateFileSelectionState();
+    }
+
+    function selectAllSingleLevel() {
+        document.querySelectorAll('.single-level-checkbox').forEach(cb => cb.checked = true);
+        updateFileSelectionState();
+    }
+
+    function clearAllSingleLevel() {
+        document.querySelectorAll('.single-level-checkbox').forEach(cb => cb.checked = false);
+        updateFileSelectionState();
+    }
+
+    function updateFileSelectionState() {
+        let selectedCount = 0;
+        
+        if (selectedTemplate?.level_type === 'single') {
+            selectedCount = document.querySelectorAll('.single-level-checkbox:checked').length;
+        } else {
+            selectedCount = document.querySelectorAll('.multi-level-checkbox:checked').length;
+        }
+
+        console.log('📊 Archivos seleccionados:', selectedCount);
+
+        const fileCountElement = document.getElementById('fileCount');
+        if (fileCountElement) {
+            fileCountElement.textContent = selectedCount;
+        }
+
+        const previewBtn = document.getElementById('previewChartBtn');
+        const addBtn = document.getElementById('addChartBtn');
+        const chartTitle = document.getElementById('chart_title');
+
+        if (previewBtn) {
+            previewBtn.disabled = selectedCount === 0 || !selectedTemplate;
+        }
+
+        if (addBtn) {
+            addBtn.disabled = selectedCount === 0 || !selectedTemplate || !chartTitle?.value.trim();
+        }
+
+        // Actualizar resumen
+        if (selectedCount > 0) {
+            updateSelectionSummary(selectedCount);
+        } else {
+            document.getElementById('selectionSummary')?.classList.add('hidden');
+        }
+    }
+
+    function updateSelectionSummary(count) {
+        const summaryElement = document.getElementById('selectionSummary');
+        const summaryContent = document.getElementById('summaryContent');
+        
+        if (!summaryElement || !summaryContent) return;
+        
+        if (selectedTemplate?.level_type === 'single') {
+            const selectedLevel = document.querySelector('input[name="single_level_selection"]:checked')?.value;
+            summaryContent.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <svg class="h-5 w-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-sm"><strong>Tipo:</strong> Comparación de un solo nivel</p>
+                        <p class="text-sm"><strong>Nivel:</strong> ${selectedLevel || 'N/A'}</p>
+                        <p class="text-sm"><strong>Archivos:</strong> ${count} seleccionado${count !== 1 ? 's' : ''}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            const levelCounts = {};
+            document.querySelectorAll('.multi-level-checkbox:checked').forEach(cb => {
+                const level = cb.dataset.level;
+                levelCounts[level] = (levelCounts[level] || 0) + 1;
+            });
+            
+            const levelsInfo = Object.entries(levelCounts)
+                .map(([level, count]) => `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">${level.chart(0).toUpperCase() + level.slice(1)}: ${count}</span>`)
+                .join(' ');
+            
+            summaryContent.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <svg class="h-5 w-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-sm mb-2"><strong>Tipo:</strong> Comparación multi-nivel</p>
+                        <p class="text-sm mb-2"><strong>Total:</strong> ${count} archivo${count !== 1 ? 's' : ''} seleccionado${count !== 1 ? 's' : ''}</p>
+                        <div class="flex flex-wrap gap-2">${levelsInfo}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        summaryElement.classList.remove('hidden');
+    }
 
     // FUNCIÓN QUE FALTABA - validateChartForm
     function validateChartForm() {
@@ -572,7 +1006,21 @@
             return false;
         }
 
-        const selectedFiles = document.querySelectorAll('.file-checkbox:checked');
+        // ✅ CAMBIO: Validar según el tipo de plantilla
+        let selectedFiles;
+        if (selectedTemplate.level_type === 'single') {
+            selectedFiles = document.querySelectorAll('.single-level-checkbox:checked');
+            
+            // Validar que se haya seleccionado un nivel
+            const selectedLevel = document.querySelector('input[name="single_level_selection"]:checked');
+            if (!selectedLevel) {
+                showNotification('Selecciona un nivel educativo', 'error');
+                return false;
+            }
+        } else {
+            selectedFiles = document.querySelectorAll('.multi-level-checkbox:checked');
+        }
+
         if (selectedFiles.length === 0) {
             showNotification('Selecciona al menos un archivo', 'error');
             return false;
@@ -590,16 +1038,45 @@
     function createChartFormData() {
         const formData = new FormData();
         formData.append('_token', '{{ csrf_token() }}');
+        formData.append('template_id', selectedTemplate.id);
+        formData.append('chart_title', document.getElementById('chart_title').value);
+        formData.append('notes', document.getElementById('chart_notes').value || '');
 
-        const selectedFiles = document.querySelectorAll('.file-checkbox:checked');
+        // ✅ CAMBIO: Seleccionar archivos según el tipo de plantilla
+        let selectedFiles;
+        if (selectedTemplate?.level_type === 'single') {
+            selectedFiles = document.querySelectorAll('.single-level-checkbox:checked');
+        } else {
+            selectedFiles = document.querySelectorAll('.multi-level-checkbox:checked');
+        }
+
         const assignedLevels = {};
         
         console.log('=== CREANDO FORM DATA ===');
+        console.log('Template type:', selectedTemplate?.level_type);
         console.log('Selected files count:', selectedFiles.length);
         
         selectedFiles.forEach((input, index) => {
             formData.append('file_ids[]', input.value);
-            const intendedLevel = input.dataset.intendedLevel;
+            
+            // ✅ CORREGIR AQUÍ: Definir intendedLevel para AMBOS casos
+            let intendedLevel;
+            
+            if (selectedTemplate?.level_type === 'single') {
+                // Para single level, obtener el nivel seleccionado del radio button
+                const selectedLevelRadio = document.querySelector('input[name="single_level_selection"]:checked');
+                intendedLevel = selectedLevelRadio ? selectedLevelRadio.value.toLowerCase() : 'general';
+                
+                // Enviar el nivel seleccionado (solo una vez, fuera del loop)
+                if (index === 0 && selectedLevelRadio) {
+                    formData.append('selected_level', selectedLevelRadio.value);
+                }
+            } else {
+                // Para multi-level, usar el nivel del dataset
+                intendedLevel = input.dataset.intendedLevel || input.dataset.level;
+            }
+            
+            // Asignar nivel con primera letra mayúscula
             assignedLevels[input.value] = intendedLevel.charAt(0).toUpperCase() + intendedLevel.slice(1);
             
             console.log(`File ${index + 1}:`, {
@@ -828,6 +1305,7 @@
 
     function showNotification(message, type) {
         const color = type === 'success' ? 'green' : 'red';
+       
         const notification = document.createElement('div');
         notification.className = `fixed top-4 right-4 bg-${color}-500 text-white px-6 py-3 rounded-md shadow-lg z-50`;
         notification.textContent = message;
@@ -897,6 +1375,7 @@
             data: series.data,
             color: series.color
         })),
+       
         chart: {
             type: 'bar',
             height: 400,

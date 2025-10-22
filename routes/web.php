@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\SingleLevelChartController; // Agregar este import
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ChartTemplateController;
 use App\Http\Controllers\ReportController;
@@ -32,16 +33,33 @@ Route::middleware([
     Route::get('/files/{id}/view-data', [FileController::class, 'viewData'])->name('files.view-data');
     Route::get('/files/{id}/export', [FileController::class, 'exportProcessedData'])->name('files.export');
 
-    // Rutas de gráficos
-    Route::get('/charts', [ChartController::class, 'index'])->name('charts.index');
-    Route::get('/charts/create', [ChartController::class, 'create'])->name('charts.create');
-    Route::post('/charts/store', [ChartController::class, 'store'])->name('charts.store');
-    Route::get('/charts/template/{id}', [ChartController::class, 'useTemplate'])->name('charts.use-template');
-    Route::post('/charts/template/{id}/generate', [ChartController::class, 'generateFromTemplate'])->name('charts.generate-from-template');
-    Route::get('/charts/{id}', [ChartController::class, 'showCharts'])->name('charts.show');
-    Route::post('/charts/generate', [ChartController::class, 'generateCustomChart'])->name('charts.generate');
-    Route::post('/charts/preview', [ChartController::class, 'getPreviewData'])->name('charts.preview');
-
+    // Rutas de gráficos - MODIFICAR ESTA SECCIÓN
+    Route::prefix('charts')->name('charts.')->group(function () {
+        // Rutas básicas
+        Route::get('/', [ChartController::class, 'index'])->name('index');
+        Route::get('/create', [ChartController::class, 'create'])->name('create');
+        Route::post('/store', [ChartController::class, 'store'])->name('store');
+        
+        // Ruta principal que decide automáticamente el tipo
+        Route::get('/template/{id}', [ChartController::class, 'useTemplate'])->name('use-template');
+        
+        // Rutas específicas por tipo
+        Route::get('/single-level/{template}', [ChartController::class, 'useSingleLevelTemplate'])->name('use-single-level-template');
+        Route::get('/multi-level/{template}', [ChartController::class, 'useMultiLevelTemplate'])->name('use-multi-level-template');
+        
+        // Rutas de generación por tipo
+        Route::post('/generate/single-level/{template}', [SingleLevelChartController::class, 'generateFromTemplate'])->name('generate-single-level');
+        Route::post('/generate/multi-level/{template}', [ChartController::class, 'generateFromTemplate'])->name('generate-multi-level');
+        
+        // Rutas legacy (mantener por compatibilidad)
+        Route::post('/template/{id}/generate', [ChartController::class, 'generateFromTemplate'])->name('generate-from-template');
+        
+        // Otras rutas existentes
+        Route::get('/{id}', [ChartController::class, 'showCharts'])->name('show');
+        Route::post('/generate', [ChartController::class, 'generateCustomChart'])->name('generate');
+        Route::post('/preview', [ChartController::class, 'getPreviewData'])->name('preview');
+    });
+    
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/create', [ReportController::class, 'create'])->name('create');
